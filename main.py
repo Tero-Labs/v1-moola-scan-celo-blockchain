@@ -1,5 +1,7 @@
 from celo_sdk.kit import Kit
 import json
+import time
+import string, time
 
 ray = 1000000000000000000000000000
 ether = 1000000000000000000
@@ -16,6 +18,11 @@ with open("./abis/AToken.json") as f:
     CUSD = json.load(f)
 with open("./abis/AToken.json") as f:
     CEUR = json.load(f)        
+# with open("./abis/LendingPoolCore.json") as f:
+#     Lending_Pool_Core = json.load(f)  
+# with open("./abis/LendingPoolDataProvider.json") as f:
+#     Lending_Pool_Data_Provider = json.load(f)      
+
 
 def getInEther(num):
     return num/ether
@@ -53,9 +60,11 @@ celo_mainnet_lendingPool = celo_mainnet_eth.contract(address= celo_mainnet_addre
 celo_mainnet_latest_block = get_latest_block(celo_mainnet_web3)
 # print("Celo mainnet latest block: " + str(celo_mainnet_latest_block))
 # print(celo_mainnet_lendingPool.address)
-# print(alfajores_lendingPool.address)
+# print(alfajores_lendingPool.address)6450002-6460001
+
 def get_all_moola_logs():
     start = 3410001
+    # start = 6470003
     end, moola_logs = start+10000, []
     while end<celo_mainnet_latest_block:
         print("\n" + str(start)+"-"+str(end))
@@ -66,6 +75,7 @@ def get_all_moola_logs():
         start, end = end+1, end+10000 
     event_filter = celo_mainnet_eth.filter({"address": celo_mainnet_lendingPool.address, 'fromBlock':celo_mainnet_web3.toHex(start), 'toBlock': celo_mainnet_web3.toHex(celo_mainnet_latest_block)})
     current_moola_logs = celo_mainnet_eth.getFilterLogs(event_filter.filter_id)
+    moola_logs += current_moola_logs
     print("\nFinal total logs:" + str(len(moola_logs)))
     return moola_logs
 
@@ -174,15 +184,38 @@ def get_user_reserve_data(lending_pool, unique_addresses):
         all_user_reserve_data.append(reserve_specific_user_reserve_data)
     return all_user_reserve_data
 
+def is_address(address):
+    return set(address).issubset(string.hexdigits) and anddress.startswith('0x') and len(address) == 42
+
 def main():
-    print(celo_mainnet_CELO.address)
-    print()
-    print()
-    print()
-    reserves = celo_mainnet_lendingPool.functions.getReserves().call()
-    for reserve_address in reserves:
-        # print(lending_pool_reserves[reserve_address])
-        print(reserve_address)
+    logs = get_all_moola_logs()
+    print(celo_mainnet_lendingPool.events.LiquidationCall().getLogs())
+    addresses = []
+    tx_hashes = [log['transactionHash'] for log in logs] 
+    # print(tx_hashes)
+    for tx_hash in tx_hashes:
+        receipt = celo_mainnet_eth.getTransactionReceipt(tx_hash)
+        if is_address(receipt['from']):
+            addresses.push(receipt['from'])    
+        if is_address(receipt['to']):
+            addresses.push(receipt['to'])
+        current_logs = receipt['logs']
+        current_addresses = [log['address'] for log in current_logs]
+        addresses += current_addresses
+    unique_addresses = list(set(addresses))    
+    
+    print(len(unique_addresses))    
+
+    file = open("addresses.txt", "w")
+    for address in addresses:
+        file.write(address+"\n")
+    # addresses = [log['address'] for log in logs] 
+    # print(addresses)
+    # unique_addresses = list(set(addresses)) 
+    # print("Number of unique addresses: " + str(len(unique_addresses)))
 
 if __name__=="__main__": 
+    start = time.time()
     main()
+    end = time.time()
+    print("time: " + str(end - start))
