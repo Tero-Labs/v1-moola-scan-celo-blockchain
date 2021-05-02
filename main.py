@@ -16,7 +16,16 @@ with open("./abis/AToken.json") as f:
     CUSD = json.load(f)
 with open("./abis/AToken.json") as f:
     CEUR = json.load(f)        
-        
+
+def getInEther(num):
+    return num/ether
+
+def getInRayRate(num):
+    return str(round((num/ray)*100, 2))+'%'
+
+def getInRay(num):
+    return num/ray    
+
 def get_latest_block(web3): 
     web3.middleware_onion.clear()
     blocksLatest = web3.eth.getBlock("latest")
@@ -42,27 +51,138 @@ celo_mainnet_address = celo_mainnet_address_provider.functions.getLendingPool().
 alfajores_lendingPool = celo_mainnet_eth.contract(address= alfajores_address, abi= Lending_Pool) 
 celo_mainnet_lendingPool = celo_mainnet_eth.contract(address= celo_mainnet_address, abi= Lending_Pool)
 celo_mainnet_latest_block = get_latest_block(celo_mainnet_web3)
-print("Celo mainnet latest block: " + str(celo_mainnet_latest_block))
-print(celo_mainnet_lendingPool.address)
-print(alfajores_lendingPool.address)
-start = 3410001
-end, moola_logs = start+10000, []
-while end<celo_mainnet_latest_block:
-    print("\n" + str(start)+"-"+str(end))
-    event_filter = celo_mainnet_eth.filter({"address": celo_mainnet_lendingPool.address, 'fromBlock':celo_mainnet_web3.toHex(start), 'toBlock': celo_mainnet_web3.toHex(end)})
+# print("Celo mainnet latest block: " + str(celo_mainnet_latest_block))
+# print(celo_mainnet_lendingPool.address)
+# print(alfajores_lendingPool.address)
+def get_all_moola_logs():
+    start = 3410001
+    end, moola_logs = start+10000, []
+    while end<celo_mainnet_latest_block:
+        print("\n" + str(start)+"-"+str(end))
+        event_filter = celo_mainnet_eth.filter({"address": celo_mainnet_lendingPool.address, 'fromBlock':celo_mainnet_web3.toHex(start), 'toBlock': celo_mainnet_web3.toHex(end)})
+        current_moola_logs = celo_mainnet_eth.getFilterLogs(event_filter.filter_id)
+        moola_logs += current_moola_logs
+        print(len(current_moola_logs))    
+        start, end = end+1, end+10000 
+    event_filter = celo_mainnet_eth.filter({"address": celo_mainnet_lendingPool.address, 'fromBlock':celo_mainnet_web3.toHex(start), 'toBlock': celo_mainnet_web3.toHex(celo_mainnet_latest_block)})
     current_moola_logs = celo_mainnet_eth.getFilterLogs(event_filter.filter_id)
-    moola_logs += current_moola_logs
-    print(len(current_moola_logs))    
-    start, end = end+1, end+10000 
-event_filter = celo_mainnet_eth.filter({"address": celo_mainnet_lendingPool.address, 'fromBlock':celo_mainnet_web3.toHex(start), 'toBlock': celo_mainnet_web3.toHex(celo_mainnet_latest_block)})
-current_moola_logs = celo_mainnet_eth.getFilterLogs(event_filter.filter_id)
-print("\nFinal total logs:" + str(len(moola_logs)))
+    print("\nFinal total logs:" + str(len(moola_logs)))
+    return moola_logs
 
-def getInEther(num):
-    return num/ether
+def get_coins():
+    celo_reserve_address = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+    cusd_reserve_address = celo_mainnet_cUSD.address
+    ceur_reserve_address = celo_mainnet_cEUR.address
+    coins = [{
+        'name':"Celo", "reserve_address": celo_reserve_address
+    }, {
+        'name':"cUSD", "reserve_address": cusd_reserve_address  
+    }, {
+        'name':"cEUR", "reserve_address": cusd_reserve_address  
+    }]
+    return coins
 
-def getInRayRate(num):
-    return str(round((num/ray)*100, 2))+'%'
+def get_lending_pool_reserve_data(reserve_address, lending_pool):
+    config_data = lending_pool.functions.getReserveConfigurationData(reserve_address).call()
+    data = lending_pool.functions.getReserveData(reserve_address).call()
+    parsed_data = {
+        "reserveConfigParameter":{
+            "LoanToValuePercentage": config_data[0],
+            "LiquidationThreshold": config_data[1],
+            "LiquidationBonus": config_data[2],
+            "InterestRateStrategyAddress": config_data[3],
+            "UsageAsCollateralEnabled": config_data[4],
+            "BorrowingEnabled": config_data[5],
+            "StableBorrowRateEnabled": config_data[6],
+            "isActive": config_data[7]
+        }, 
+        "reservePoolGlobalInfo":{
+            "TotalLiquidity": getInEther(data[0]),
+            "AvailableLiquidity": getInEther(data[1]),
+            "TotalBorrowsStable": getInEther(data[2]),
+            "TotalBorrowsVariable": getInEther(data[3]),
+            "LiquidityRate": getInRayRate(data[4]),
+            "VariableRate": getInRayRate(data[5]),
+            "StableRate": getInRayRate(data[6]),
+            "AverageStableRate": getInRayRate(data[7]),
+            "UtilizationRate": getInRayRate(data[8]),# Ut
+            "LiquidityIndex": getInRay(data[9]),
+            "VariableBorrowIndex": getInRay(data[10]),
+            "MToken": data[11],
+            "LastUpdate": datetime.fromtimestamp(data[12]).strftime("%m/%d/%Y, %H:%M:%S")
+        } 
+    }
+    return parsed_data
 
-def getInRay(num):
-    return num/ray    
+def get_lending_pool_data(lending_pool):
+    coins = get_coins()
+    lending_pool_data = []
+    for coin in coins:
+        # print(coin['name'])
+        data = get_lending_pool_reserve_data(coin['reserve_address'], lending_pool)
+        lending_pool_data.append({
+            "CoinName": coin['name'],
+            "Data": data 
+        })
+    return lending_pool_data
+
+def get_user_account_data(lending_pool, unique_addresses):
+    all_user_account_data = []
+    for address in unique_addresses:
+        user_account_data = lending_pool.functions.getUserAccountData(web3.toChecksumAddress(address)).call()
+        parsedUserAccountData = {
+            "TotalLiquidityETH": getInEther(user_account_data[0]),
+            "TotalCollateralETH": getInEther(user_account_data[1]),
+            "TotalBorrowsETH": getInEther(user_account_data[2]),
+            "TotalFeesETH": getInEther(user_account_data[3]),
+            "AvailableBorrowsETH": getInEther(user_account_data[4]),
+            "CurrentLiquidationThreshold": str(user_account_data[5]) +'%',
+            "LoanToValuePercentage": str(user_account_data[6])+'%',
+            "HealthFactor": getInEther(user_account_data[7])
+        }
+        all_user_account_data.append({
+            "UserAddress": address,
+            "UserData": parsedUserAccountData 
+        })
+    return all_user_account_data
+
+def get_user_reserve_data(lending_pool, unique_addresses):
+    coins = get_coins()
+    all_user_reserve_data = []
+    for coin in coins:
+        reserve_specific_user_reserve_data = {"Coin": coin["name"], "Data":[]}
+        for address in unique_addresses:
+            user_reserve_data = lending_pool.functions.getUserReserveData(coin['reserve_address'], web3.toChecksumAddress(address)).call()
+            
+            parsed_data = {
+                "Deposited": getInEther(user_reserve_data[0]),
+                "Borrowed": getInEther(user_reserve_data[1]),
+                "Debt": getInEther(user_reserve_data[2]),
+                "RateMode": INTEREST_RATE[user_reserve_data[3]],
+                "BorrowRate": getInRayRate(user_reserve_data[4]),
+                "LiquidityRate": getInRayRate(user_reserve_data[5]),
+                "OriginationFee": getInEther(user_reserve_data[6]),
+                "BorrowIndex": getInRay(user_reserve_data[7]),
+                "LastUpdate": datetime.fromtimestamp(user_reserve_data[8]).strftime("%m/%d/%Y, %H:%M:%S"),
+                "IsCollateral": user_reserve_data[9], 
+            }
+           
+            reserve_specific_user_reserve_data["Data"].append({
+                "UserAddress": address,
+                "UserReserveData": parsed_data
+            })
+        all_user_reserve_data.append(reserve_specific_user_reserve_data)
+    return all_user_reserve_data
+
+def main():
+    print(celo_mainnet_CELO.address)
+    print()
+    print()
+    print()
+    reserves = celo_mainnet_lendingPool.functions.getReserves().call()
+    for reserve_address in reserves:
+        # print(lending_pool_reserves[reserve_address])
+        print(reserve_address)
+
+if __name__=="__main__": 
+    main()
