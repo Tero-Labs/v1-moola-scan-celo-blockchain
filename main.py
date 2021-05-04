@@ -2,6 +2,7 @@ from celo_sdk.kit import Kit
 import json
 import time, datetime
 import string, time
+import call_api
 
 ray = 1000000000000000000000000000
 ether = 1000000000000000000
@@ -241,9 +242,10 @@ def get_adderesses_from_file():
 
 def main():
     # store_addresses()
-    unique_addresses = get_adderesses_from_file()
-    print(unique_addresses)
-    print(len(unique_addresses))
+    # unique_addresses = get_adderesses_from_file()
+    # print(unique_addresses)
+    # print(len(unique_addresses))
+    call_api.hello()
 
 if __name__=="__main__": 
     start = time.time()
