@@ -1,6 +1,6 @@
 from celo_sdk.kit import Kit
 import json
-import time
+import time, datetime
 import string, time
 
 ray = 1000000000000000000000000000
@@ -63,8 +63,8 @@ celo_mainnet_latest_block = get_latest_block(celo_mainnet_web3)
 # print(alfajores_lendingPool.address)6450002-6460001
 
 def get_all_moola_logs():
-    start = 3410001
-    # start = 6470003
+    # start = 3410001
+    start = 6490004
     end, moola_logs = start+10000, []
     while end<celo_mainnet_latest_block:
         print("\n" + str(start)+"-"+str(end))
@@ -123,6 +123,7 @@ def get_lending_pool_reserve_data(reserve_address, lending_pool):
         } 
     }
     return parsed_data
+
 
 def get_lending_pool_data(lending_pool):
     coins = get_coins()
@@ -185,37 +186,68 @@ def get_user_reserve_data(lending_pool, unique_addresses):
     return all_user_reserve_data
 
 def is_address(address):
-    return set(address).issubset(string.hexdigits) and anddress.startswith('0x') and len(address) == 42
+    return address.startswith('0x') and len(address) == 42
 
-def main():
+def get_addresses():
     logs = get_all_moola_logs()
+    print(logs[0])
     print(celo_mainnet_lendingPool.events.LiquidationCall().getLogs())
-    addresses = []
+    fromto_addresses = []
+    log_addresses = []
     tx_hashes = [log['transactionHash'] for log in logs] 
     # print(tx_hashes)
     for tx_hash in tx_hashes:
         receipt = celo_mainnet_eth.getTransactionReceipt(tx_hash)
         if is_address(receipt['from']):
-            addresses.push(receipt['from'])    
+            fromto_addresses.append(receipt['from'])    
         if is_address(receipt['to']):
-            addresses.push(receipt['to'])
+            fromto_addresses.append(receipt['to'])
         current_logs = receipt['logs']
         current_addresses = [log['address'] for log in current_logs]
-        addresses += current_addresses
-    unique_addresses = list(set(addresses))    
-    
-    print(len(unique_addresses))    
+        log_addresses += current_addresses
+    log_unique_addresses = list(set(log_addresses))    
+    fromto_unique_addresses = list(set(fromto_addresses))    
+    unique_addresses = list(set(fromto_addresses+log_addresses))
+    return (log_unique_addresses, fromto_unique_addresses, unique_addresses)
 
-    file = open("addresses.txt", "w")
+def store_addresses():
+    log_unique_addresses, fromto_unique_addresses, unique_addresses = get_addresses()
+    print("Number of From to unique addresses: " + str(len(fromto_unique_addresses)))    
+    print("Number of log unique addresses: " + str(len(log_unique_addresses)))    
+    print("Number of log unique addresses: " + str(len(unique_addresses)))    
+
+    file = open("addresses1.txt", "w")
+    file.write("From to:\n")
+    for address in fromto_unique_addresses:
+        file.write(address+"\n")
+    file.write("\nLog:\n")
+    for address in log_unique_addresses:
+        file.write(address+"\n")
+    file.close()
+
+    file = open("uniqueAddresses1.txt", "w")
     for address in unique_addresses:
         file.write(address+"\n")
+    file.close()
     # addresses = [log['address'] for log in logs] 
     # print(addresses)
     # unique_addresses = list(set(addresses)) 
     # print("Number of unique addresses: " + str(len(unique_addresses)))
 
+def get_adderesses_from_file():
+    unique_addresses = [] 
+    with open('uniqueAddresses.txt') as f:
+        unique_addresses = list(f)
+    return unique_addresses
+
+def main():
+    # store_addresses()
+    unique_addresses = get_adderesses_from_file()
+    print(unique_addresses)
+    print(len(unique_addresses))
+
 if __name__=="__main__": 
     start = time.time()
     main()
     end = time.time()
-    print("time: " + str((end - start)/60) + "minutes")
+    print("time: " + str(datetime.timedelta(seconds = end-start)))
