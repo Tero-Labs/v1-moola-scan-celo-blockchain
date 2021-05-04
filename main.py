@@ -92,21 +92,23 @@ def get_coins():
     }]
     return coins
 
-def get_lending_pool_reserve_data(reserve_address, lending_pool):
+def get_lending_pool_reserve_config_data():
     config_data = lending_pool.functions.getReserveConfigurationData(reserve_address).call()
+    parsed_data = {
+        "LoanToValuePercentage": config_data[0],
+        "LiquidationThreshold": config_data[1],
+        "LiquidationBonus": config_data[2],
+        "InterestRateStrategyAddress": config_data[3],
+        "UsageAsCollateralEnabled": config_data[4],
+        "BorrowingEnabled": config_data[5],
+        "StableBorrowRateEnabled": config_data[6],
+        "isActive": config_data[7]
+    }
+    return parsed_data
+
+def get_lending_pool_reserve_data(reserve_address, lending_pool):
     data = lending_pool.functions.getReserveData(reserve_address).call()
     parsed_data = {
-        "reserveConfigParameter":{
-            "LoanToValuePercentage": config_data[0],
-            "LiquidationThreshold": config_data[1],
-            "LiquidationBonus": config_data[2],
-            "InterestRateStrategyAddress": config_data[3],
-            "UsageAsCollateralEnabled": config_data[4],
-            "BorrowingEnabled": config_data[5],
-            "StableBorrowRateEnabled": config_data[6],
-            "isActive": config_data[7]
-        }, 
-        "reservePoolGlobalInfo":{
             "TotalLiquidity": getInEther(data[0]),
             "AvailableLiquidity": getInEther(data[1]),
             "TotalBorrowsStable": getInEther(data[2]),
@@ -120,12 +122,11 @@ def get_lending_pool_reserve_data(reserve_address, lending_pool):
             "VariableBorrowIndex": getInRay(data[10]),
             "MToken": data[11],
             "LastUpdate": datetime.fromtimestamp(data[12]).strftime("%m/%d/%Y, %H:%M:%S")
-        } 
     }
     return parsed_data
 
 
-def get_lending_pool_data(lending_pool):
+def dump_lending_pool_data(lending_pool):
     coins = get_coins()
     lending_pool_data = []
     for coin in coins:
@@ -137,7 +138,7 @@ def get_lending_pool_data(lending_pool):
         })
     return lending_pool_data
 
-def get_user_account_data(lending_pool, unique_addresses):
+def dump_user_account_data(lending_pool, unique_addresses):
     all_user_account_data = []
     for address in unique_addresses:
         user_account_data = lending_pool.functions.getUserAccountData(web3.toChecksumAddress(address)).call()
@@ -157,14 +158,13 @@ def get_user_account_data(lending_pool, unique_addresses):
         })
     return all_user_account_data
 
-def get_user_reserve_data(lending_pool, unique_addresses):
+def dump_user_reserve_data(lending_pool, unique_addresses):
     coins = get_coins()
     all_user_reserve_data = []
     for coin in coins:
         reserve_specific_user_reserve_data = {"Coin": coin["name"], "Data":[]}
         for address in unique_addresses:
             user_reserve_data = lending_pool.functions.getUserReserveData(coin['reserve_address'], web3.toChecksumAddress(address)).call()
-            
             parsed_data = {
                 "Deposited": getInEther(user_reserve_data[0]),
                 "Borrowed": getInEther(user_reserve_data[1]),
@@ -177,7 +177,6 @@ def get_user_reserve_data(lending_pool, unique_addresses):
                 "LastUpdate": datetime.fromtimestamp(user_reserve_data[8]).strftime("%m/%d/%Y, %H:%M:%S"),
                 "IsCollateral": user_reserve_data[9], 
             }
-           
             reserve_specific_user_reserve_data["Data"].append({
                 "UserAddress": address,
                 "UserReserveData": parsed_data
