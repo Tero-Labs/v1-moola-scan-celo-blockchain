@@ -207,7 +207,7 @@ def main():
     print(len(unique_addresses))    
 
     file = open("addresses.txt", "w")
-    for address in addresses:
+    for address in unique_addresses:
         file.write(address+"\n")
     # addresses = [log['address'] for log in logs] 
     # print(addresses)
@@ -218,4 +218,4 @@ if __name__=="__main__":
     start = time.time()
     main()
     end = time.time()
-    print("time: " + str(end - start))
+    print("time: " + str((end - start)/60) + "minutes")
