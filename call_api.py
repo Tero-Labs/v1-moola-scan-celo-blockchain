@@ -1,26 +1,27 @@
-import requests
+import requests, time
 
 URL = "https://mooapi.herokuapp.com/"
 
-def dump_data(api_url, params, methpd):
-    try:
-        response = ''
-        if method == 'GET':
-            response = requests.get(
-                URL+api_url,
-                params = params    
-            ) 
-        elif method == 'POST': 
-            response = requests.post(
-                URL+api_url,
-                data = params    
-            )
-        if (response.status_code == 200):
-            print("The request was a success!")
-        response.raise_for_status()
-    # Additional code will only run if the request is successful
-    except requests.exceptions.HTTPError as error:
-        print(error)
+def dump_data(api_url, params, method):
+    time.sleep(1)
+    # try:
+    #     response = ''
+    #     if method == 'GET':
+    #         response = requests.get(
+    #             URL+api_url,
+    #             params = params    
+    #         ) 
+    #     elif method == 'POST': 
+    #         response = requests.post(
+    #             URL+api_url,
+    #             data = params    
+    #         )
+    #     if (response.status_code == 200):
+    #         print("The request was a success!")
+    #     response.raise_for_status()
+    # # Additional code will only run if the request is successful
+    # except requests.exceptions.HTTPError as error:
+    #     print(error)
 
 def dump_reserve_config_data(CoinType, LoanToValuePercentage, LiquidationThreshold, LiquidationBonus, InterestRateStrategyAddress, UsageAsCollateralEnabled, BorrowingEnabled, StableBorrowRateEnabled, isActive):
     dump_data('set/DB_CeloMainnet/Tbl_ReserveConfigurationData', {'CoinType': CoinType,'LoanToValuePercentage': LoanToValuePercentage, 'LiquidationThreshold': LiquidationThreshold, 'LiquidationBonus': LiquidationBonus, 'InterestRateStrategyAddress': InterestRateStrategyAddress, 'UsageAsCollateralEnabled': UsageAsCollateralEnabled, 'BorrowingEnabled': BorrowingEnabled, 'StableBorrowRateEnabled': StableBorrowRateEnabled, 'isActive': isActive}, 'GET')
