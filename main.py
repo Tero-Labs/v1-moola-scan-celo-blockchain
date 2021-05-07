@@ -4,7 +4,6 @@ import time, datetime
 import string, time
 import call_api
 from datetime import datetime as dt
-import collections
 
 ray = 1000000000000000000000000000
 ether = 1000000000000000000
@@ -147,7 +146,6 @@ def get_lending_pool_data():
 
 def get_user_account_data(unique_addresses):
     all_user_account_data = []
-    no_value_addresses = []
     for address in unique_addresses:
         try:
             user_account_data = celo_mainnet_lendingPool.functions.getUserAccountData(celo_mainnet_web3.toChecksumAddress(address)).call()
@@ -165,25 +163,19 @@ def get_user_account_data(unique_addresses):
             "LoanToValuePercentage": str(user_account_data[6])+'%',
             "HealthFactor": getInEther(user_account_data[7])
         }
-        if parsedUserAccountData["TotalLiquidityETH"] == 0.0 and parsedUserAccountData["TotalCollateralETH"] == 0.0 and parsedUserAccountData["TotalBorrowsETH"] == 0.0 and parsedUserAccountData["TotalFeesETH"] == 0.0 and parsedUserAccountData["CurrentLiquidationThreshold"] == '0%' and parsedUserAccountData["LoanToValuePercentage"] == '0%':
-            no_value_addresses.append(address)
+        
         all_user_account_data.append({
             "UserAddress": address,
             "UserData": parsedUserAccountData 
         })
     print("User account data: " + str(len(all_user_account_data)))
-    print("No value addresses: ")
-    print(len(no_value_addresses))
-    # print(no_value_addresses)
-    return all_user_account_data, no_value_addresses
+    return all_user_account_data
 
 def get_user_reserve_data(unique_addresses):
     coins = get_coins()
     all_user_reserve_data = []
-    all_no_value_addresses = []
     for coin in coins:
         reserve_specific_user_reserve_data = {"Coin": coin["name"], "Data":[]}
-        no_value_addresses = []
         for address in unique_addresses:
             try:
                 user_reserve_data = celo_mainnet_lendingPool.functions.getUserReserveData(coin['reserve_address'], celo_mainnet_web3.toChecksumAddress(address)).call()
@@ -203,25 +195,13 @@ def get_user_reserve_data(unique_addresses):
                 "LastUpdate": dt.fromtimestamp(user_reserve_data[8]).strftime("%m/%d/%Y, %H:%M:%S"),
                 "IsCollateral": user_reserve_data[9], 
             }
-            if parsed_data["Deposited"] == 0.0 and parsed_data["Borrowed"] == 0.0 and parsed_data["Debt"] == 0.0 and parsed_data["OriginationFee"] == 0.0 and parsed_data["BorrowIndex"] == 0.0 and parsed_data["BorrowRate"] == '0.0%':
-                no_value_addresses.append(address)
-                
             reserve_specific_user_reserve_data["Data"].append({
                 "UserAddress": address,
                 "UserReserveData": parsed_data
             })
-        print(coin["name"] + " user reserve data: " + str(len(reserve_specific_user_reserve_data["Data"])))
-        print(coin["name"] +  " no value addresses: ")
-        print(len(no_value_addresses))
-        all_no_value_addresses.append(no_value_addresses)
-        # print(no_value_addresses)
+        print(coin["name"] + " user reserve data: " + str(len(reserve_specific_user_reserve_data["Data"])))   
         all_user_reserve_data.append(reserve_specific_user_reserve_data)
-    common_no_value_addresses =list(set(all_no_value_addresses[0]) & set(all_no_value_addresses[1]) & set(all_no_value_addresses[2]))
-   
-    print("All no value addresses: ")    
-    print(len(common_no_value_addresses))
-    # print(common_no_value_addresses)
-    return (all_user_reserve_data, common_no_value_addresses)
+    return all_user_reserve_data
 
 def is_address(address):
     return address.startswith('0x') and len(address) == 42
@@ -286,18 +266,10 @@ def store_addresses_with_no_value(addresses_with_no_value):
 def bootstrap(unique_addresses):
     # lending_pool_data = get_lending_pool_data()
     # print(lending_pool_data)
-    user_account_data, user_account_no_value_addresses = get_user_account_data(unique_addresses)
+    user_account_data = get_user_account_data(unique_addresses)
     # print(user_account_data)
-    user_reserve_data, user_reserve_no_value_addresses = get_user_reserve_data(unique_addresses)
-    print("___")
-    print(len(user_account_no_value_addresses))
-    print(len(user_reserve_no_value_addresses))
-    print(collections.Counter(user_account_no_value_addresses) == collections.Counter(user_reserve_no_value_addresses))
-    store_addresses_with_no_value(user_account_no_value_addresses)
-    # common_no_value_address = list(set(user_account_no_value_addresses).intersection(set(user_reserve_no_value_addresses)))
-    # all_no_value_address = list(set(user_account_no_value_addresses).union(set(user_reserve_no_value_addresses)))
-    # print(len(all_no_value_address))
-    # print(len(common_no_value_address))
+    user_reserve_data = get_user_reserve_data(unique_addresses)
+    
     # print(user_reserve_data)
 
 def update():
