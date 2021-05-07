@@ -4,6 +4,7 @@ import time, datetime
 import string, time
 import call_api
 from datetime import datetime as dt
+import collections
 
 ray = 1000000000000000000000000000
 ether = 1000000000000000000
@@ -91,7 +92,7 @@ def get_coins():
     }, {
         'name':"cUSD", "reserve_address": cusd_reserve_address  
     }, {
-        'name':"cEUR", "reserve_address": cusd_reserve_address  
+        'name':"cEUR", "reserve_address": ceur_reserve_address  
     }]
     return coins
 
@@ -216,7 +217,8 @@ def get_user_reserve_data(unique_addresses):
         # print(no_value_addresses)
         all_user_reserve_data.append(reserve_specific_user_reserve_data)
     common_no_value_addresses =list(set(all_no_value_addresses[0]) & set(all_no_value_addresses[1]) & set(all_no_value_addresses[2]))
-    print("All no value addresses: ")
+   
+    print("All no value addresses: ")    
     print(len(common_no_value_addresses))
     # print(common_no_value_addresses)
     return (all_user_reserve_data, common_no_value_addresses)
@@ -276,16 +278,26 @@ def get_adderesses_from_file():
         unique_addresses = list(f)
     return [unique_address.strip() for unique_address in unique_addresses]
 
+def store_addresses_with_no_value(addresses_with_no_value):
+    with open('addressesWithNoValue.txt', 'w') as file: 
+        for address in addresses_with_no_value:
+            file.write(address+"\n")
+
 def bootstrap(unique_addresses):
     # lending_pool_data = get_lending_pool_data()
     # print(lending_pool_data)
     user_account_data, user_account_no_value_addresses = get_user_account_data(unique_addresses)
     # print(user_account_data)
     user_reserve_data, user_reserve_no_value_addresses = get_user_reserve_data(unique_addresses)
-    common_no_value_address = list(set(user_account_no_value_addresses).intersection(set(user_reserve_no_value_addresses)))
-    all_no_value_address = list(set(user_account_no_value_addresses).union(set(user_reserve_no_value_addresses)))
-    print(len(all_no_value_address))
-    print(len(common_no_value_address))
+    print("___")
+    print(len(user_account_no_value_addresses))
+    print(len(user_reserve_no_value_addresses))
+    print(collections.Counter(user_account_no_value_addresses) == collections.Counter(user_reserve_no_value_addresses))
+    store_addresses_with_no_value(user_account_no_value_addresses)
+    # common_no_value_address = list(set(user_account_no_value_addresses).intersection(set(user_reserve_no_value_addresses)))
+    # all_no_value_address = list(set(user_account_no_value_addresses).union(set(user_reserve_no_value_addresses)))
+    # print(len(all_no_value_address))
+    # print(len(common_no_value_address))
     # print(user_reserve_data)
 
 def update():
