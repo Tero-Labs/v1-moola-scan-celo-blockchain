@@ -3,6 +3,7 @@ import json
 import time, datetime
 import string, time
 import call_api
+from datetime import datetime as dt
 
 ray = 1000000000000000000000000000
 ether = 1000000000000000000
@@ -34,9 +35,9 @@ def getInRayRate(num):
 def getInRay(num):
     return num/ray    
 
-def get_latest_block(web3): 
-    web3.middleware_onion.clear()
-    blocksLatest = web3.eth.getBlock("latest")
+def get_latest_block(celo_mainnet_web3): 
+    celo_mainnet_web3.middleware_onion.clear()
+    blocksLatest = celo_mainnet_web3.eth.getBlock("latest")
     return int(blocksLatest["number"], 16)    
 
 alfajores_kit = Kit('https://alfajores-forno.celo-testnet.org')
@@ -62,6 +63,7 @@ celo_mainnet_latest_block = get_latest_block(celo_mainnet_web3)
 # print("Celo mainnet latest block: " + str(celo_mainnet_latest_block))
 # print(celo_mainnet_lendingPool.address)
 # print(alfajores_lendingPool.address)6450002-6460001
+
 
 def get_all_moola_logs():
     # start = 3410001
@@ -93,8 +95,8 @@ def get_coins():
     }]
     return coins
 
-def get_lending_pool_reserve_config_data():
-    config_data = lending_pool.functions.getReserveConfigurationData(reserve_address).call()
+def get_lending_pool_reserve_config_data(reserve_address):
+    config_data = celo_mainnet_lendingPool.functions.getReserveConfigurationData(reserve_address).call()
     parsed_data = {
         "LoanToValuePercentage": config_data[0],
         "LiquidationThreshold": config_data[1],
@@ -107,8 +109,8 @@ def get_lending_pool_reserve_config_data():
     }
     return parsed_data
 
-def get_lending_pool_reserve_data(reserve_address, lending_pool):
-    data = lending_pool.functions.getReserveData(reserve_address).call()
+def get_lending_pool_reserve_data(reserve_address):
+    data = celo_mainnet_lendingPool.functions.getReserveData(reserve_address).call()
     parsed_data = {
             "TotalLiquidity": getInEther(data[0]),
             "AvailableLiquidity": getInEther(data[1]),
@@ -122,27 +124,36 @@ def get_lending_pool_reserve_data(reserve_address, lending_pool):
             "LiquidityIndex": getInRay(data[9]),
             "VariableBorrowIndex": getInRay(data[10]),
             "MToken": data[11],
-            "LastUpdate": datetime.fromtimestamp(data[12]).strftime("%m/%d/%Y, %H:%M:%S")
+            "LastUpdate": dt.fromtimestamp(data[12]).strftime("%m/%d/%Y, %H:%M:%S")
     }
     return parsed_data
 
 
-def dump_lending_pool_data(lending_pool):
+def get_lending_pool_data():
     coins = get_coins()
     lending_pool_data = []
     for coin in coins:
         # print(coin['name'])
-        data = get_lending_pool_reserve_data(coin['reserve_address'], lending_pool)
+        config_data= get_lending_pool_reserve_config_data(coin['reserve_address'])
+        data = get_lending_pool_reserve_data(coin['reserve_address'])
         lending_pool_data.append({
             "CoinName": coin['name'],
+            "ConfigData": config_data,
             "Data": data 
+            
         })
     return lending_pool_data
 
-def dump_user_account_data(lending_pool, unique_addresses):
+def get_user_account_data(unique_addresses):
     all_user_account_data = []
+    no_value_addresses = []
     for address in unique_addresses:
-        user_account_data = lending_pool.functions.getUserAccountData(web3.toChecksumAddress(address)).call()
+        try:
+            user_account_data = celo_mainnet_lendingPool.functions.getUserAccountData(celo_mainnet_web3.toChecksumAddress(address)).call()
+        except Exception as e:
+            print(e)
+            print("Exception for address: " + address)
+            continue
         parsedUserAccountData = {
             "TotalLiquidityETH": getInEther(user_account_data[0]),
             "TotalCollateralETH": getInEther(user_account_data[1]),
@@ -153,19 +164,32 @@ def dump_user_account_data(lending_pool, unique_addresses):
             "LoanToValuePercentage": str(user_account_data[6])+'%',
             "HealthFactor": getInEther(user_account_data[7])
         }
+        if parsedUserAccountData["TotalLiquidityETH"] == 0.0 and parsedUserAccountData["TotalCollateralETH"] == 0.0 and parsedUserAccountData["TotalBorrowsETH"] == 0.0 and parsedUserAccountData["TotalFeesETH"] == 0.0 and parsedUserAccountData["CurrentLiquidationThreshold"] == '0%' and parsedUserAccountData["LoanToValuePercentage"] == '0%':
+            no_value_addresses.append(address)
         all_user_account_data.append({
             "UserAddress": address,
             "UserData": parsedUserAccountData 
         })
-    return all_user_account_data
+    print("User account data: " + str(len(all_user_account_data)))
+    print("No value addresses: ")
+    print(len(no_value_addresses))
+    # print(no_value_addresses)
+    return all_user_account_data, no_value_addresses
 
-def dump_user_reserve_data(lending_pool, unique_addresses):
+def get_user_reserve_data(unique_addresses):
     coins = get_coins()
     all_user_reserve_data = []
+    all_no_value_addresses = []
     for coin in coins:
         reserve_specific_user_reserve_data = {"Coin": coin["name"], "Data":[]}
+        no_value_addresses = []
         for address in unique_addresses:
-            user_reserve_data = lending_pool.functions.getUserReserveData(coin['reserve_address'], web3.toChecksumAddress(address)).call()
+            try:
+                user_reserve_data = celo_mainnet_lendingPool.functions.getUserReserveData(coin['reserve_address'], celo_mainnet_web3.toChecksumAddress(address)).call()
+            except Exception as e:
+                print(e)
+                print("Exception for address: " + address)
+                continue
             parsed_data = {
                 "Deposited": getInEther(user_reserve_data[0]),
                 "Borrowed": getInEther(user_reserve_data[1]),
@@ -175,15 +199,27 @@ def dump_user_reserve_data(lending_pool, unique_addresses):
                 "LiquidityRate": getInRayRate(user_reserve_data[5]),
                 "OriginationFee": getInEther(user_reserve_data[6]),
                 "BorrowIndex": getInRay(user_reserve_data[7]),
-                "LastUpdate": datetime.fromtimestamp(user_reserve_data[8]).strftime("%m/%d/%Y, %H:%M:%S"),
+                "LastUpdate": dt.fromtimestamp(user_reserve_data[8]).strftime("%m/%d/%Y, %H:%M:%S"),
                 "IsCollateral": user_reserve_data[9], 
             }
+            if parsed_data["Deposited"] == 0.0 and parsed_data["Borrowed"] == 0.0 and parsed_data["Debt"] == 0.0 and parsed_data["OriginationFee"] == 0.0 and parsed_data["BorrowIndex"] == 0.0 and parsed_data["BorrowRate"] == '0.0%':
+                no_value_addresses.append(address)
+                
             reserve_specific_user_reserve_data["Data"].append({
                 "UserAddress": address,
                 "UserReserveData": parsed_data
             })
+        print(coin["name"] + " user reserve data: " + str(len(reserve_specific_user_reserve_data["Data"])))
+        print(coin["name"] +  " no value addresses: ")
+        print(len(no_value_addresses))
+        all_no_value_addresses.append(no_value_addresses)
+        # print(no_value_addresses)
         all_user_reserve_data.append(reserve_specific_user_reserve_data)
-    return all_user_reserve_data
+    common_no_value_addresses =list(set(all_no_value_addresses[0]) & set(all_no_value_addresses[1]) & set(all_no_value_addresses[2]))
+    print("All no value addresses: ")
+    print(len(common_no_value_addresses))
+    # print(common_no_value_addresses)
+    return (all_user_reserve_data, common_no_value_addresses)
 
 def is_address(address):
     return address.startswith('0x') and len(address) == 42
@@ -238,14 +274,30 @@ def get_adderesses_from_file():
     unique_addresses = [] 
     with open('uniqueAddresses.txt') as f:
         unique_addresses = list(f)
-    return unique_addresses
+    return [unique_address.strip() for unique_address in unique_addresses]
+
+def bootstrap(unique_addresses):
+    # lending_pool_data = get_lending_pool_data()
+    # print(lending_pool_data)
+    user_account_data, user_account_no_value_addresses = get_user_account_data(unique_addresses)
+    # print(user_account_data)
+    user_reserve_data, user_reserve_no_value_addresses = get_user_reserve_data(unique_addresses)
+    common_no_value_address = list(set(user_account_no_value_addresses).intersection(set(user_reserve_no_value_addresses)))
+    all_no_value_address = list(set(user_account_no_value_addresses).union(set(user_reserve_no_value_addresses)))
+    print(len(all_no_value_address))
+    print(len(common_no_value_address))
+    # print(user_reserve_data)
+
+def update():
+    pass
 
 def main():
     # store_addresses()
-    # unique_addresses = get_adderesses_from_file()
+    unique_addresses = get_adderesses_from_file()
     # print(unique_addresses)
-    # print(len(unique_addresses))
-    call_api.hello()
+    print(len(unique_addresses))
+    # call_api.hello()
+    bootstrap(unique_addresses)
 
 if __name__=="__main__": 
     start = time.time()
