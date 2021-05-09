@@ -4,9 +4,13 @@ import time, datetime
 import string, time
 import call_api
 from datetime import datetime as dt
+from pycoingecko import CoinGeckoAPI
+
+cg = CoinGeckoAPI()
 
 ray = 1000000000000000000000000000
 ether = 1000000000000000000
+         
 DELAY_IN_SEC = 10 
 INTEREST_RATE =[ 'NONE','STABLE','VARIABLE' ]
 
@@ -316,7 +320,10 @@ Events:
 #         event_entries = event_filter.get_all_entries()
 #         print(event + " event:")
 #         print(event_entries)
-    
+
+def get_gas_price():
+    return int(celo_mainnet_eth.gasPrice, 16)
+
 def estimate_gas_amount(activity, amount):
     if activity == 'deposit':
         return int(alfajores_lendingPool.functions.deposit(celo_mainnet_cUSD.address, amount, 0).estimateGas({
@@ -335,6 +342,11 @@ def estimate_gas_amount(activity, amount):
             'from': '0x011ce5bd73a744b2b5d12265be37250defb5b590', 
         }), 16)
     
+def wei_to_celo(price_in_wei):
+    return ((price_in_wei/ether)*cg.get_price(ids='ethereum', vs_currencies='usd')['ethereum']['usd'])/cg.get_price(ids='celo', vs_currencies='usd')['celo']['usd']
+
+def get_fee(activity, amount):
+    return estimate_gas_amount(activity, amount) * (wei_to_celo(get_gas_price()))
 
 def main():
     # store_addresses()    
@@ -344,7 +356,8 @@ def main():
     # block_info = get_block_info(celo_mainnet_latest_block)
     # print(celo_mainnet_latest_block)
     # print(block_info)
- 
+    print(get_gas_price())
+    print(get_fee("deposit", 150))
     # user_activity()
     # transactions = block_info["transactions"]
     # number_of_transaction, latest_timestamp, index_latest_tx = len(transactions), 99999999, 0
