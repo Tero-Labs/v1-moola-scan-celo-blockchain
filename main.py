@@ -35,6 +35,9 @@ def getInRayRate(num):
 def getInRay(num):
     return num/ray    
 
+def get_block_info(block_number):
+    return celo_mainnet_eth.getBlock(hex(block_number))
+
 def get_latest_block(celo_mainnet_web3): 
     celo_mainnet_web3.middleware_onion.clear()
     blocksLatest = celo_mainnet_web3.eth.getBlock("latest")
@@ -58,12 +61,12 @@ celo_mainnet_CELO = celo_mainnet_eth.contract(address='0x471EcE3750Da237f93B8E33
 alfajores_address = alfajores_address_provider.functions.getLendingPool().call()
 celo_mainnet_address = celo_mainnet_address_provider.functions.getLendingPool().call() 
 alfajores_lendingPool = celo_mainnet_eth.contract(address= alfajores_address, abi= Lending_Pool) 
-celo_mainnet_lendingPool = celo_mainnet_eth.contract(address= celo_mainnet_address, abi= Lending_Pool)
+celo_mainnet_lendingPool = celo_mainnet_eth.contract(address=celo_mainnet_address, abi= Lending_Pool)
 celo_mainnet_latest_block = get_latest_block(celo_mainnet_web3)
 call_api.dump_latest_scanned_block_number(celo_mainnet_latest_block)
 print("Latest scanned block number " + str(celo_mainnet_latest_block))
 # print("Celo mainnet latest block: " + str(celo_mainnet_latest_block))
-# print(celo_mainnet_lendingPool.address)
+print(celo_mainnet_address)
 # print(alfajores_lendingPool.address)6450002-6460001
 
 
@@ -300,11 +303,54 @@ def bootstrap():
 def update():
     pass
 
+'''
+Events: 
+,
+'''
+
+# def user_activity():
+#     events = ['Borrow', 'Deposit', 'FlashLoan', 'LiquidationCall', 'OriginationFeeLiquidated', 'RebalanceStableBorrowRate', 'RedeemUnderlying', 'Repay', 'ReserveUsedAsCollateralDisabled', 'ReserveUsedAsCollateralEnabled', 'Swap']
+#     print(dir(celo_mainnet_lendingPool))
+#     for event in events:
+#         event_filter = celo_mainnet_lendingPool.events[event].createFilter(fromBlock=celo_mainnet_web3.toHex(0), toBlock=celo_mainnet_web3.toHex(celo_mainnet_latest_block))
+#         event_entries = event_filter.get_all_entries()
+#         print(event + " event:")
+#         print(event_entries)
+    
+def estimate_gas_amount(activity, amount):
+    if activity == 'deposit':
+        return int(alfajores_lendingPool.functions.deposit(celo_mainnet_cUSD.address, amount, 0).estimateGas({
+            'from': '0x011ce5bd73a744b2b5d12265be37250defb5b590', 
+        }), 16)
+    elif activity == 'borrow':
+        return int(alfajores_lendingPool.functions.borrow(celo_mainnet_cUSD.address, amount, 1, 0).estimateGas({
+            'from': '0x011ce5bd73a744b2b5d12265be37250defb5b590', 
+        }), 16)
+    elif activity == 'repay':
+        return int(alfajores_lendingPool.functions.repay(celo_mainnet_cEUR.address, amount, alfajores_web3.toChecksumAddress('0x011ce5bd73a744b2b5d12265be37250defb5b590')).estimateGas({
+            'from': '0x011ce5bd73a744b2b5d12265be37250defb5b590', 
+        }), 16)
+    elif activity == 'withdraw':
+        return int(alfajores_lendingPool.functions.redeemUnderlying(celo_mainnet_cUSD.address, alfajores_web3.toChecksumAddress('0x011ce5bd73a744b2b5d12265be37250defb5b590'), amount, 0).estimateGas({
+            'from': '0x011ce5bd73a744b2b5d12265be37250defb5b590', 
+        }), 16)
+    
+
 def main():
     # store_addresses()    
     # print(unique_addresses)
     # print(len(unique_addresses))
-    bootstrap()
+    # bootstrap()
+    # block_info = get_block_info(celo_mainnet_latest_block)
+    # print(celo_mainnet_latest_block)
+    # print(block_info)
+ 
+    # user_activity()
+    # transactions = block_info["transactions"]
+    # number_of_transaction, latest_timestamp, index_latest_tx = len(transactions), 99999999, 0
+    # for i in range(number_of_transaction):
+    #     latest_timestamp < transactions[i].timeStamp
+
 
 if __name__=="__main__": 
     start = time.time()
