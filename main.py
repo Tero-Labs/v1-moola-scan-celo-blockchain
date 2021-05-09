@@ -139,6 +139,7 @@ def get_lending_pool_reserve_data(reserve_address):
     return parsed_data
 
 
+
 def get_lending_pool_data():
     coins = get_coins()
     lending_pool_data = []
@@ -307,10 +308,34 @@ def bootstrap():
 def update():
     pass
 
-'''
-Events: 
-,
-'''
+def get_exchange_rate(coin):
+    print("Coin name: " + coin)
+    celo_in_usd = cg.get_price(ids='celo', vs_currencies='usd')['celo']['usd']
+    cusd_in_usd = cg.get_price(ids='celo-dollar', vs_currencies='usd')['celo-dollar']['usd']
+    ceuro_in_usd = cg.get_price(ids='universal-euro', vs_currencies='usd')['universal-euro']['usd']
+
+    if coin.lower() == 'celo':
+        return {
+            'USD': celo_in_usd,
+            'cUSD': celo_in_usd/cusd_in_usd,
+            'cEUR': celo_in_usd/ceuro_in_usd
+        }
+        
+    elif coin.lower() == 'cusd':
+        return {
+            'USD': cusd_in_usd,
+            'Celo': cusd_in_usd/celo_in_usd,
+            'cEUR': cusd_in_usd/ceuro_in_usd
+        }
+    elif coin.lower() == 'ceur':
+        return {
+            'USD': ceuro_in_usd,
+            'cUSD': ceuro_in_usd/cusd_in_usd,
+            'Celo': ceuro_in_usd/celo_in_usd
+        }
+    else:
+        return "Unknown coin"
+
 
 # def user_activity():
 #     events = ['Borrow', 'Deposit', 'FlashLoan', 'LiquidationCall', 'OriginationFeeLiquidated', 'RebalanceStableBorrowRate', 'RedeemUnderlying', 'Repay', 'ReserveUsedAsCollateralDisabled', 'ReserveUsedAsCollateralEnabled', 'Swap']
@@ -356,8 +381,11 @@ def main():
     # block_info = get_block_info(celo_mainnet_latest_block)
     # print(celo_mainnet_latest_block)
     # print(block_info)
-    print(get_gas_price())
-    print(get_fee("deposit", 150))
+    # print(get_gas_price())
+    # print(get_fee("deposit", 150))
+    print(get_exchange_rate('Celo'))
+    print(get_exchange_rate('Cusd'))
+    print(get_exchange_rate('Ceur'))
     # user_activity()
     # transactions = block_info["transactions"]
     # number_of_transaction, latest_timestamp, index_latest_tx = len(transactions), 99999999, 0
