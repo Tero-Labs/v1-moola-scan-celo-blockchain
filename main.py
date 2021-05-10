@@ -72,6 +72,7 @@ print("Latest scanned block number " + str(celo_mainnet_latest_block))
 # print("Celo mainnet latest block: " + str(celo_mainnet_latest_block))
 print(celo_mainnet_address)
 # print(alfajores_lendingPool.address)6450002-6460001
+gas_contract = celo_mainnet_kit.base_wrapper.create_and_get_contract_by_name('GasPriceMinimum')
 
 
 def get_all_moola_logs():
@@ -346,8 +347,13 @@ def get_exchange_rate(coin):
 #         print(event + " event:")
 #         print(event_entries)
 
-def get_gas_price():
-    return int(celo_mainnet_eth.gasPrice, 16)
+def get_gas_price(coin_name):
+    coin_reserve_address = {
+        "celo": "0x471EcE3750Da237f93B8E339c536989b8978a438",
+        "cusd": celo_mainnet_cUSD.address,
+        "ceur": celo_mainnet_cEUR.address
+    }
+    return gas_contract.get_gas_price_minimum(coin_reserve_address[coin_name.lower()])
 
 def estimate_gas_amount(activity, amount):
     if activity == 'deposit':
@@ -370,8 +376,8 @@ def estimate_gas_amount(activity, amount):
 def wei_to_celo(price_in_wei):
     return ((price_in_wei/ether)*cg.get_price(ids='ethereum', vs_currencies='usd')['ethereum']['usd'])/cg.get_price(ids='celo', vs_currencies='usd')['celo']['usd']
 
-def get_fee(activity, amount):
-    return estimate_gas_amount(activity, amount) * (wei_to_celo(get_gas_price()))
+def get_fee(activity, amount, coin_name):
+    return estimate_gas_amount(activity, amount) * (wei_to_celo(get_gas_price(coin_name)))
 
 def main():
     # store_addresses()    
@@ -381,11 +387,17 @@ def main():
     # block_info = get_block_info(celo_mainnet_latest_block)
     # print(celo_mainnet_latest_block)
     # print(block_info)
-    # print(get_gas_price())
-    # print(get_fee("deposit", 150))
-    print(get_exchange_rate('Celo'))
-    print(get_exchange_rate('Cusd'))
-    print(get_exchange_rate('Ceur'))
+    print(get_fee("deposit", 150, 'celo'))
+    print(get_fee("deposit", 150, 'cusd'))
+    print(get_fee("deposit", 150, 'ceur'))
+    # print(get_exchange_rate('Celo'))
+    # print(get_exchange_rate('Cusd'))
+    # print(get_exchange_rate('Ceur'))
+    accounts_contract = celo_mainnet_kit.base_wrapper.create_and_get_contract_by_name('Accounts')
+
+    # print(get_gas_price('celo'))
+    # print(get_gas_price('cusd'))
+    # print(get_gas_price('ceur'))
     # user_activity()
     # transactions = block_info["transactions"]
     # number_of_transaction, latest_timestamp, index_latest_tx = len(transactions), 99999999, 0
