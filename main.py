@@ -5,6 +5,7 @@ import string, time
 import call_api
 from datetime import datetime as dt
 from pycoingecko import CoinGeckoAPI
+from web3 import Web3
 
 cg = CoinGeckoAPI()
 
@@ -337,15 +338,28 @@ def get_exchange_rate(coin):
     else:
         return "Unknown coin"
 
+w3 = Web3(Web3.HTTPProvider('https://forno.celo.org'))
+lnd_contract = w3.eth.contract(address=celo_mainnet_address, abi=Lending_Pool)
+events = ['Borrow', 'Deposit', 'FlashLoan', 'LiquidationCall', 'OriginationFeeLiquidated', 'RebalanceStableBorrowRate', 'RedeemUnderlying', 'Repay', 'ReserveUsedAsCollateralDisabled', 'ReserveUsedAsCollateralEnabled', 'Swap']
 
-# def user_activity():
-#     events = ['Borrow', 'Deposit', 'FlashLoan', 'LiquidationCall', 'OriginationFeeLiquidated', 'RebalanceStableBorrowRate', 'RedeemUnderlying', 'Repay', 'ReserveUsedAsCollateralDisabled', 'ReserveUsedAsCollateralEnabled', 'Swap']
-#     print(dir(celo_mainnet_lendingPool))
-#     for event in events:
-#         event_filter = celo_mainnet_lendingPool.events[event].createFilter(fromBlock=celo_mainnet_web3.toHex(0), toBlock=celo_mainnet_web3.toHex(celo_mainnet_latest_block))
-#         event_entries = event_filter.get_all_entries()
-#         print(event + " event:")
-#         print(event_entries)
+def get_user_activity():
+    all_event_data = {}
+    for event in events:
+        start = 3410001
+        specific_event_data = []
+        end = start+10000
+        while end<celo_mainnet_latest_block:
+            event_filter = lnd_contract.events[event].createFilter(fromBlock=celo_mainnet_web3.toHex(start), toBlock=celo_mainnet_web3.toHex(end))
+            specific_event_data += event_filter.get_all_entries()
+            start, end = end+1, end+10000 
+        event_filter = lnd_contract.events[event].createFilter(fromBlock=celo_mainnet_web3.toHex(start), toBlock=celo_mainnet_web3.toHex(celo_mainnet_latest_block))
+        specific_event_data += event_filter.get_all_entries()
+        print(event + " event:")
+        print(len(specific_event_data))
+        if len(specific_event_data) >0:
+            print(specific_event_data[0])
+        all_event_data[event] = specific_event_data
+    return all_event_data
 
 def get_gas_price(coin_name):
     coin_reserve_address = {
@@ -387,18 +401,16 @@ def main():
     # block_info = get_block_info(celo_mainnet_latest_block)
     # print(celo_mainnet_latest_block)
     # print(block_info)
-    print(get_fee("deposit", 150, 'celo'))
-    print(get_fee("deposit", 150, 'cusd'))
-    print(get_fee("deposit", 150, 'ceur'))
+    # print(get_fee("deposit", 150, 'celo'))
+    # print(get_fee("deposit", 150, 'cusd'))
+    # print(get_fee("deposit", 150, 'ceur'))
     # print(get_exchange_rate('Celo'))
     # print(get_exchange_rate('Cusd'))
     # print(get_exchange_rate('Ceur'))
-    accounts_contract = celo_mainnet_kit.base_wrapper.create_and_get_contract_by_name('Accounts')
-
+    get_user_activity()   
     # print(get_gas_price('celo'))
     # print(get_gas_price('cusd'))
     # print(get_gas_price('ceur'))
-    # user_activity()
     # transactions = block_info["transactions"]
     # number_of_transaction, latest_timestamp, index_latest_tx = len(transactions), 99999999, 0
     # for i in range(number_of_transaction):
