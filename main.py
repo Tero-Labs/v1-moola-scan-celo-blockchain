@@ -196,6 +196,7 @@ def get_user_reserve_data(unique_addresses):
                 print(e)
                 print("Exception for address: " + str(address))
                 continue
+            print(user_reserve_data)
             parsed_data = {
                 "Deposited": getInEther(user_reserve_data[0]),
                 "Borrowed": getInEther(user_reserve_data[1]),
@@ -279,7 +280,7 @@ def store_addresses_with_no_value(addresses_with_no_value):
 def call_apis_for_lending_pool(all_lending_pool_data):
     for lending_pool_data in all_lending_pool_data:
         call_api.dump_reserve_config_data(lending_pool_data["CoinName"], lending_pool_data["ConfigData"]["LoanToValuePercentage"], lending_pool_data["ConfigData"]["LiquidationThreshold"], lending_pool_data["ConfigData"]["LiquidationBonus"], lending_pool_data["ConfigData"]["InterestRateStrategyAddress"], lending_pool_data["ConfigData"]["UsageAsCollateralEnabled"], lending_pool_data["ConfigData"]["BorrowingEnabled"], lending_pool_data["ConfigData"]["StableBorrowRateEnabled"], lending_pool_data["ConfigData"]["isActive"]) 
-        call_api.dump_reserve_data(lending_pool_data["CoinName"], lending_pool_data["Data"]["TotalLiquidity"], lending_pool_data["Data"]["AvailableLiquidity"], lending_pool_data["Data"]["TotalBorrowsStable"], lending_pool_data["Data"]["TotalBorrowsVariable"], lending_pool_data["Data"]["LiquidityRate"], lending_pool_data["Data"]["VariableRate"], lending_pool_data["Data"]["AverageStableRate"], lending_pool_data["Data"]["UtilizationRate"], lending_pool_data["Data"]["LiquidityIndex"], lending_pool_data["Data"]["VariableBorrowIndex"], lending_pool_data["Data"]["MToken"], lending_pool_data["Data"]["LastUpdate"])
+        call_api.dump_reserve_data(lending_pool_data["CoinName"], lending_pool_data["Data"]["TotalLiquidity"], lending_pool_data["Data"]["AvailableLiquidity"], lending_pool_data["Data"]["TotalBorrowsStable"], lending_pool_data["Data"]["TotalBorrowsVariable"], lending_pool_data["Data"]["LiquidityRate"], lending_pool_data["Data"]["VariableRate"], lending_pool_data["Data"]["StableRate"], lending_pool_data["Data"]["AverageStableRate"], lending_pool_data["Data"]["UtilizationRate"], lending_pool_data["Data"]["LiquidityIndex"], lending_pool_data["Data"]["VariableBorrowIndex"], lending_pool_data["Data"]["MToken"], lending_pool_data["Data"]["LastUpdate"])
 
 def cal_apis_for_user_account_data(all_user_data):
     for user_data in  all_user_data:
@@ -408,6 +409,7 @@ def main():
     # print(get_exchange_rate('Cusd'))
     # print(get_exchange_rate('Ceur'))
     get_user_activity()   
+    
     # print(get_gas_price('celo'))
     # print(get_gas_price('cusd'))
     # print(get_gas_price('ceur'))
