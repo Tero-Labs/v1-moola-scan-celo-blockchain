@@ -32,7 +32,7 @@ def dump_reserve_data(CoinType, TotalLiquidity, AvailableLiquidity, TotalBorrows
 
 
 def dump_user_addresses(addresses):
-    dump_data('set/DB_CeloMainnet/Tbl_User/add_addresses', {'addresses': addresses, 'agent_id':"Test"}, 'POST')
+    dump_data('set/DB_CeloMainnet/Tbl_User/add_addresses', {'addresses': addresses, 'agent_id':"Test"}, 'GET')
 
 def dump_user_account_data(address, TotalLiquidityETH, TotalCollateralETH, TotalBorrowsETH, TotalFeesETH, AvailableBorrowsETH, CurrentLiquidationThreshold, LoanToValuePercentage, HealthFactor):
     dump_data('set/DB_CeloMainnet/Tbl_UserAccountData', {'address': address, 'total_liquidity_eth': TotalLiquidityETH, 'total_collateral_eth': TotalCollateralETH, 'total_borrows_eth': TotalBorrowsETH, 'total_fees_eth': TotalFeesETH, 'available_borrows_eth': AvailableBorrowsETH, 'current_liquidation_threshold': CurrentLiquidationThreshold, 'ltv': LoanToValuePercentage, 'health_factor': HealthFactor, 'agent_id':"Test"}, 'GET')

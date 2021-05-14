@@ -82,11 +82,11 @@ def get_all_moola_logs():
 
     end, moola_logs = start+10000, []
     while end<celo_mainnet_latest_block:
-        print("\n" + str(start)+"-"+str(end))
+        # print("\n" + str(start)+"-"+str(end))
         event_filter = celo_mainnet_eth.filter({"address": celo_mainnet_lendingPool.address, 'fromBlock':celo_mainnet_web3.toHex(start), 'toBlock': celo_mainnet_web3.toHex(end)})
         current_moola_logs = celo_mainnet_eth.getFilterLogs(event_filter.filter_id)
         moola_logs += current_moola_logs
-        print(len(current_moola_logs))    
+        # print(len(current_moola_logs))    
         start, end = end+1, end+10000 
     event_filter = celo_mainnet_eth.filter({"address": celo_mainnet_lendingPool.address, 'fromBlock':celo_mainnet_web3.toHex(start), 'toBlock': celo_mainnet_web3.toHex(celo_mainnet_latest_block)})
     current_moola_logs = celo_mainnet_eth.getFilterLogs(event_filter.filter_id)
@@ -181,7 +181,7 @@ def get_user_account_data(unique_addresses):
             "UserAddress": address,
             "UserData": parsedUserAccountData 
         })
-    print("User account data: " + str(len(all_user_account_data)))
+    # print("User account data: " + str(len(all_user_account_data)))
     return all_user_account_data
 
 def get_user_reserve_data(unique_addresses):
@@ -196,7 +196,7 @@ def get_user_reserve_data(unique_addresses):
                 print(e)
                 print("Exception for address: " + str(address))
                 continue
-            print(user_reserve_data)
+           
             parsed_data = {
                 "Deposited": getInEther(user_reserve_data[0]),
                 "Borrowed": getInEther(user_reserve_data[1]),
@@ -213,7 +213,7 @@ def get_user_reserve_data(unique_addresses):
                 "UserAddress": address,
                 "UserReserveData": parsed_data
             })
-        print(coin["name"] + " user reserve data: " + str(len(reserve_specific_user_reserve_data["Data"])))   
+        # print(coin["name"] + " user reserve data: " + str(len(reserve_specific_user_reserve_data["Data"])))   
         all_user_reserve_data.append(reserve_specific_user_reserve_data)
     return all_user_reserve_data
 
@@ -227,7 +227,7 @@ def get_addresses():
     fromto_addresses = []
     log_addresses = []
     tx_hashes = [log['transactionHash'] for log in logs] 
-    # print(tx_hashes)
+   
     for tx_hash in tx_hashes:
         receipt = celo_mainnet_eth.getTransactionReceipt(tx_hash)
         if is_address(receipt['from']):
@@ -240,10 +240,10 @@ def get_addresses():
     log_unique_addresses = list(set(log_addresses))    
     fromto_unique_addresses = list(set(fromto_addresses))    
     unique_addresses = list(set(fromto_addresses+log_addresses))
+    store_addresses(log_unique_addresses, fromto_unique_addresses, unique_addresses)
     return (log_unique_addresses, fromto_unique_addresses, unique_addresses)
 
-def store_addresses():
-    log_unique_addresses, fromto_unique_addresses, unique_addresses = get_addresses()
+def store_addresses(log_unique_addresses, fromto_unique_addresses, unique_addresses):
     print("Number of From to unique addresses: " + str(len(fromto_unique_addresses)))    
     print("Number of log unique addresses: " + str(len(log_unique_addresses)))    
     print("Number of log unique addresses: " + str(len(unique_addresses)))    
@@ -261,6 +261,7 @@ def store_addresses():
     for address in unique_addresses:
         file.write(address+"\n")
     file.close()
+
     # addresses = [log['address'] for log in logs] 
     # print(addresses)
     # unique_addresses = list(set(addresses)) 
@@ -293,8 +294,10 @@ def cal_apis_for_user_reserve_data(all_user_reserve_data):
         for data in all_data:
             call_api.dump_user_reserve_data(coin_name, data["UserAddress"], data["UserReserveData"]["Deposited"], data["UserReserveData"]["Borrowed"], data["UserReserveData"]["Debt"], data["UserReserveData"]["RateMode"], data["UserReserveData"]["BorrowRate"], data["UserReserveData"]["LiquidityRate"], data["UserReserveData"]["OriginationFee"], data["UserReserveData"]["BorrowIndex"], data["UserReserveData"]["LastUpdate"], data["UserReserveData"]["IsCollateral"])
 
-def call_apis_for_useractivity_data():
-    pass
+def call_apis_for_useractivity_data(user_activities):
+    for user_activity in user_activities:
+        call_api.dump_user_activity_data(user_activity['address'], user_activity['coinType'], user_activity['activityType'], user_activity['amount'])
+
 
 def bootstrap():
     log_unique_addresses, fromto_unique_addresses, unique_addresses = get_addresses()
@@ -307,6 +310,8 @@ def bootstrap():
     # print(user_account_data)
     all_user_reserve_data = get_user_reserve_data(unique_addresses)
     cal_apis_for_user_reserve_data(all_user_reserve_data)
+    user_activities = get_user_activity(3410001, celo_mainnet_latest_block)   
+    call_apis_for_useractivity_data(user_activities)
 
 def update():
     pass
@@ -341,26 +346,53 @@ def get_exchange_rate(coin):
 
 w3 = Web3(Web3.HTTPProvider('https://forno.celo.org'))
 lnd_contract = w3.eth.contract(address=celo_mainnet_address, abi=Lending_Pool)
-events = ['Borrow', 'Deposit', 'FlashLoan', 'LiquidationCall', 'OriginationFeeLiquidated', 'RebalanceStableBorrowRate', 'RedeemUnderlying', 'Repay', 'ReserveUsedAsCollateralDisabled', 'ReserveUsedAsCollateralEnabled', 'Swap']
+# events = ['Borrow', 'Deposit', 'FlashLoan', 'LiquidationCall', 'OriginationFeeLiquidated', 'RebalanceStableBorrowRate', 'RedeemUnderlying', 'Repay', 'ReserveUsedAsCollateralDisabled', 'ReserveUsedAsCollateralEnabled', 'Swap']
+# 
+events = {
+ 'Borrow': 'borrow', 'Deposit': 'deposit', 'LiquidationCall': 'liquidate', 'RedeemUnderlying': 'withdraw', 'Repay': 'repay'
+}
+coins = {
+    '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE': 'celo',
+    '0x765DE816845861e75A25fCA122bb6898B8B1282a': 'cusd',
+    '0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73': 'ceur'
+}
 
-def get_user_activity():
-    all_event_data = {}
-    for event in events:
-        start = 3410001
+
+def get_user_activity(from_block, to_block):
+    all_event_data, user_activities = {}, []
+    for event in events.keys():
+        # start = 3410001
+        start = from_block
         specific_event_data = []
         end = start+10000
-        while end<celo_mainnet_latest_block:
+        while end<to_block:
             event_filter = lnd_contract.events[event].createFilter(fromBlock=celo_mainnet_web3.toHex(start), toBlock=celo_mainnet_web3.toHex(end))
             specific_event_data += event_filter.get_all_entries()
             start, end = end+1, end+10000 
-        event_filter = lnd_contract.events[event].createFilter(fromBlock=celo_mainnet_web3.toHex(start), toBlock=celo_mainnet_web3.toHex(celo_mainnet_latest_block))
+        event_filter = lnd_contract.events[event].createFilter(fromBlock=celo_mainnet_web3.toHex(start), toBlock=celo_mainnet_web3.toHex(to_block))
         specific_event_data += event_filter.get_all_entries()
-        print(event + " event:")
-        print(len(specific_event_data))
-        if len(specific_event_data) >0:
-            print(specific_event_data[0])
+        # print(events[event] + " event:")
+        # print(len(specific_event_data))
+        if len(specific_event_data) > 0:
+            for e in specific_event_data:
+                amount =''
+                if event == 'LiquidationCall':
+                    amount = e['args']['_liquidatedCollateralAmount']
+                elif event == 'Repay':
+                    amount = e['args']['_amountMinusFees']
+                else:
+                    amount = e['args']['_amount']
+                user_activities.append({
+                    'activityType': events[event],
+                    'address': e['args']['_user'],
+                    'coinType': coins[e['args']['_reserve']],
+                    'amount': amount,
+                })
+           
+            
         all_event_data[event] = specific_event_data
-    return all_event_data
+    
+    return user_activities
 
 def get_gas_price(coin_name):
     coin_reserve_address = {
@@ -394,11 +426,13 @@ def wei_to_celo(price_in_wei):
 def get_fee(activity, amount, coin_name):
     return estimate_gas_amount(activity, amount) * (wei_to_celo(get_gas_price(coin_name)))
 
+
+
 def main():
     # store_addresses()    
     # print(unique_addresses)
     # print(len(unique_addresses))
-    # bootstrap()
+    bootstrap()
     # block_info = get_block_info(celo_mainnet_latest_block)
     # print(celo_mainnet_latest_block)
     # print(block_info)
@@ -408,7 +442,6 @@ def main():
     # print(get_exchange_rate('Celo'))
     # print(get_exchange_rate('Cusd'))
     # print(get_exchange_rate('Ceur'))
-    get_user_activity()   
     
     # print(get_gas_price('celo'))
     # print(get_gas_price('cusd'))
