@@ -57,12 +57,8 @@ celo_mainnet_address = celo_mainnet_address_provider.functions.getLendingPool().
 alfajores_lendingPool = celo_mainnet_eth.contract(address= alfajores_address, abi= Lending_Pool) 
 celo_mainnet_lendingPool = celo_mainnet_eth.contract(address=celo_mainnet_address, abi= Lending_Pool)
 celo_mainnet_latest_block = get_latest_block(celo_mainnet_web3)
-call_api.dump_latest_scanned_block_number(celo_mainnet_latest_block)
 print("Latest scanned block number " + str(celo_mainnet_latest_block))
-# print("Celo mainnet latest block: " + str(celo_mainnet_latest_block))
-print(celo_mainnet_address)
-print(celo_mainnet_lendingPool.address)
-# print(alfajores_lendingPool.address)6450002-6460001
+
 gas_contract = celo_mainnet_kit.base_wrapper.create_and_get_contract_by_name('GasPriceMinimum')
 w3 = Web3(Web3.HTTPProvider('https://forno.celo.org'))
 eth = w3.eth
@@ -104,10 +100,10 @@ def get_lending_pool_reserve_config_data(reserve_address):
         "LiquidationThreshold": config_data[1],
         "LiquidationBonus": config_data[2],
         "InterestRateStrategyAddress": config_data[3],
-        "UsageAsCollateralEnabled": int(config_data[4]),
-        "BorrowingEnabled": int(config_data[5]),
-        "StableBorrowRateEnabled": int(config_data[6]),
-        "isActive": int(config_data[7])
+        "UsageAsCollateralEnabled": 1 if config_data[4] else "",
+        "BorrowingEnabled": 1 if config_data[5] else "",
+        "StableBorrowRateEnabled": 1 if config_data[6] else "",
+        "isActive": 1 if config_data[7] else ""
     }
     return parsed_data
 
@@ -197,7 +193,7 @@ def get_user_reserve_data(unique_addresses):
                 "OriginationFee": getInEther(user_reserve_data[6]),
                 "BorrowIndex": getInRay(user_reserve_data[7]),
                 "LastUpdate": dt.fromtimestamp(user_reserve_data[8]).strftime("%m-%d-%Y %H:%M:%S"),
-                "IsCollateral": int(user_reserve_data[9]), 
+                "IsCollateral": 1 if user_reserve_data[9] else "", 
             }
             reserve_specific_user_reserve_data["Data"].append({
                 "UserAddress": address,
