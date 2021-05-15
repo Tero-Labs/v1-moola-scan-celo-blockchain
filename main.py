@@ -35,7 +35,7 @@ def getInEther(num):
     return num/ether
 
 def getInRayRate(num):
-    return str(round((num/ray)*100, 2))+'%'
+    return round((num/ray)*100, 2)
 
 def getInRay(num):
     return num/ray    
@@ -76,19 +76,19 @@ print(celo_mainnet_address)
 gas_contract = celo_mainnet_kit.base_wrapper.create_and_get_contract_by_name('GasPriceMinimum')
 
 
-def get_all_moola_logs():
-    start = 3410001
+def get_all_moola_logs(from_block, to_block):
+    start = from_block
     # start = 6510004
 
     end, moola_logs = start+10000, []
-    while end<celo_mainnet_latest_block:
-        # print("\n" + str(start)+"-"+str(end))
-        event_filter = celo_mainnet_eth.filter({"address": celo_mainnet_lendingPool.address, 'fromBlock':celo_mainnet_web3.toHex(start), 'toBlock': celo_mainnet_web3.toHex(end)})
-        current_moola_logs = celo_mainnet_eth.getFilterLogs(event_filter.filter_id)
-        moola_logs += current_moola_logs
-        # print(len(current_moola_logs))    
-        start, end = end+1, end+10000 
-    event_filter = celo_mainnet_eth.filter({"address": celo_mainnet_lendingPool.address, 'fromBlock':celo_mainnet_web3.toHex(start), 'toBlock': celo_mainnet_web3.toHex(celo_mainnet_latest_block)})
+    # while end<celo_mainnet_latest_block:
+    #     # print("\n" + str(start)+"-"+str(end))
+    #     event_filter = celo_mainnet_eth.filter({"address": celo_mainnet_lendingPool.address, 'fromBlock':celo_mainnet_web3.toHex(start), 'toBlock': celo_mainnet_web3.toHex(end)})
+    #     current_moola_logs = celo_mainnet_eth.getFilterLogs(event_filter.filter_id)
+    #     moola_logs += current_moola_logs
+    #     # print(len(current_moola_logs))    
+    #     start, end = end+1, end+10000 
+    event_filter = celo_mainnet_eth.filter({"address": celo_mainnet_lendingPool.address, 'fromBlock':celo_mainnet_web3.toHex(start), 'toBlock': celo_mainnet_web3.toHex(to_block)})
     current_moola_logs = celo_mainnet_eth.getFilterLogs(event_filter.filter_id)
     moola_logs += current_moola_logs
     print("\nFinal total logs:" + str(len(moola_logs)))
@@ -114,10 +114,10 @@ def get_lending_pool_reserve_config_data(reserve_address):
         "LiquidationThreshold": config_data[1],
         "LiquidationBonus": config_data[2],
         "InterestRateStrategyAddress": config_data[3],
-        "UsageAsCollateralEnabled": config_data[4],
-        "BorrowingEnabled": config_data[5],
-        "StableBorrowRateEnabled": config_data[6],
-        "isActive": config_data[7]
+        "UsageAsCollateralEnabled": int(config_data[4]),
+        "BorrowingEnabled": int(config_data[5]),
+        "StableBorrowRateEnabled": int(config_data[6]),
+        "isActive": int(config_data[7])
     }
     return parsed_data
 
@@ -172,8 +172,8 @@ def get_user_account_data(unique_addresses):
             "TotalBorrowsETH": getInEther(user_account_data[2]),
             "TotalFeesETH": getInEther(user_account_data[3]),
             "AvailableBorrowsETH": getInEther(user_account_data[4]),
-            "CurrentLiquidationThreshold": str(user_account_data[5]) +'%',
-            "LoanToValuePercentage": str(user_account_data[6])+'%',
+            "CurrentLiquidationThreshold": user_account_data[5],
+            "LoanToValuePercentage": user_account_data[6],
             "HealthFactor": getInEther(user_account_data[7])
         }
         
@@ -207,7 +207,7 @@ def get_user_reserve_data(unique_addresses):
                 "OriginationFee": getInEther(user_reserve_data[6]),
                 "BorrowIndex": getInRay(user_reserve_data[7]),
                 "LastUpdate": dt.fromtimestamp(user_reserve_data[8]).strftime("%m/%d/%Y, %H:%M:%S"),
-                "IsCollateral": user_reserve_data[9], 
+                "IsCollateral": int(user_reserve_data[9]), 
             }
             reserve_specific_user_reserve_data["Data"].append({
                 "UserAddress": address,
@@ -220,8 +220,8 @@ def get_user_reserve_data(unique_addresses):
 def is_address(address):
     return address.startswith('0x') and len(address) == 42
 
-def get_addresses():
-    logs = get_all_moola_logs()
+def get_addresses(from_block, to_block):
+    logs = get_all_moola_logs(from_block, to_block)
     # print(logs[0])
     # print(celo_mainnet_lendingPool.events.LiquidationCall().getLogs())
     fromto_addresses = []
@@ -240,7 +240,7 @@ def get_addresses():
     log_unique_addresses = list(set(log_addresses))    
     fromto_unique_addresses = list(set(fromto_addresses))    
     unique_addresses = list(set(fromto_addresses+log_addresses))
-    store_addresses(log_unique_addresses, fromto_unique_addresses, unique_addresses)
+    # store_addresses(log_unique_addresses, fromto_unique_addresses, unique_addresses)
     return (log_unique_addresses, fromto_unique_addresses, unique_addresses)
 
 def store_addresses(log_unique_addresses, fromto_unique_addresses, unique_addresses):
@@ -279,9 +279,14 @@ def store_addresses_with_no_value(addresses_with_no_value):
             file.write(address+"\n")
 
 def call_apis_for_lending_pool(all_lending_pool_data):
+    
     for lending_pool_data in all_lending_pool_data:
-        call_api.dump_reserve_config_data(lending_pool_data["CoinName"], lending_pool_data["ConfigData"]["LoanToValuePercentage"], lending_pool_data["ConfigData"]["LiquidationThreshold"], lending_pool_data["ConfigData"]["LiquidationBonus"], lending_pool_data["ConfigData"]["InterestRateStrategyAddress"], lending_pool_data["ConfigData"]["UsageAsCollateralEnabled"], lending_pool_data["ConfigData"]["BorrowingEnabled"], lending_pool_data["ConfigData"]["StableBorrowRateEnabled"], lending_pool_data["ConfigData"]["isActive"]) 
-        call_api.dump_reserve_data(lending_pool_data["CoinName"], lending_pool_data["Data"]["TotalLiquidity"], lending_pool_data["Data"]["AvailableLiquidity"], lending_pool_data["Data"]["TotalBorrowsStable"], lending_pool_data["Data"]["TotalBorrowsVariable"], lending_pool_data["Data"]["LiquidityRate"], lending_pool_data["Data"]["VariableRate"], lending_pool_data["Data"]["StableRate"], lending_pool_data["Data"]["AverageStableRate"], lending_pool_data["Data"]["UtilizationRate"], lending_pool_data["Data"]["LiquidityIndex"], lending_pool_data["Data"]["VariableBorrowIndex"], lending_pool_data["Data"]["MToken"], lending_pool_data["Data"]["LastUpdate"])
+        coin_name = lending_pool_data["CoinName"]
+        
+        
+        call_api.dump_reserve_config_data(coin_name, lending_pool_data["ConfigData"]["LoanToValuePercentage"], lending_pool_data["ConfigData"]["LiquidationThreshold"], lending_pool_data["ConfigData"]["LiquidationBonus"], lending_pool_data["ConfigData"]["InterestRateStrategyAddress"], lending_pool_data["ConfigData"]["UsageAsCollateralEnabled"], lending_pool_data["ConfigData"]["BorrowingEnabled"], lending_pool_data["ConfigData"]["StableBorrowRateEnabled"], lending_pool_data["ConfigData"]["isActive"]) 
+       
+        call_api.dump_reserve_data(coin_name, lending_pool_data["Data"]["TotalLiquidity"], lending_pool_data["Data"]["AvailableLiquidity"], lending_pool_data["Data"]["TotalBorrowsStable"], lending_pool_data["Data"]["TotalBorrowsVariable"], lending_pool_data["Data"]["LiquidityRate"], lending_pool_data["Data"]["VariableRate"], lending_pool_data["Data"]["StableRate"], lending_pool_data["Data"]["AverageStableRate"], lending_pool_data["Data"]["UtilizationRate"], lending_pool_data["Data"]["LiquidityIndex"], lending_pool_data["Data"]["VariableBorrowIndex"], lending_pool_data["Data"]["MToken"], lending_pool_data["Data"]["LastUpdate"])
 
 def cal_apis_for_user_account_data(all_user_data):
     for user_data in  all_user_data:
@@ -300,18 +305,22 @@ def call_apis_for_useractivity_data(user_activities):
 
 
 def bootstrap():
-    log_unique_addresses, fromto_unique_addresses, unique_addresses = get_addresses()
+    from_block, to_block = 3410001, 3410001+10000
+    log_unique_addresses, fromto_unique_addresses, unique_addresses = get_addresses(from_block, to_block)
+    # print(len(unique_addresses))
     all_lending_pool_data = get_lending_pool_data()
     call_apis_for_lending_pool(all_lending_pool_data)
-    # print(lending_pool_data)
-    call_api.dump_user_addresses(unique_addresses)
+    # print(all_lending_pool_data)
+    call_api.dump_user_addresses(unique_addresses, from_block, to_block)
     all_user_account_data = get_user_account_data(unique_addresses)
     cal_apis_for_user_account_data(all_user_account_data)
-    # print(user_account_data)
+    # print(all_user_account_data)
     all_user_reserve_data = get_user_reserve_data(unique_addresses)
     cal_apis_for_user_reserve_data(all_user_reserve_data)
-    user_activities = get_user_activity(3410001, celo_mainnet_latest_block)   
+    # print(all_user_reserve_data)
+    user_activities = get_user_activity(from_block, to_block)   
     call_apis_for_useractivity_data(user_activities)
+    call_api.dump_latest_scanned_block_number(to_block)
 
 def update():
     pass
