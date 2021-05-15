@@ -19,12 +19,7 @@ with open("./abis/LendingPoolAddressesProvider.json") as f:
     Lending_Pool_Addresses_Provider = json.load(f) 
 with open("./abis/LendingPool.json") as f:
     Lending_Pool = json.load(f)
-with open("./abis/AToken.json") as f:
-    CELO_Token = json.load(f)
-with open("./abis/AToken.json") as f:
-    CUSD = json.load(f)
-with open("./abis/AToken.json") as f:
-    CEUR = json.load(f)        
+    
 # with open("./abis/LendingPoolCore.json") as f:
 #     Lending_Pool_Core = json.load(f)  
 # with open("./abis/LendingPoolDataProvider.json") as f:
