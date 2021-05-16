@@ -5,7 +5,6 @@ import string, time
 import call_api
 from datetime import datetime as dt
 from pycoingecko import CoinGeckoAPI
-from web3 import Web3
 
 cg = CoinGeckoAPI()
 
@@ -36,7 +35,7 @@ def getInRay(num):
     return num/ray    
 
 def get_block_info(block_number):
-    return eth.getBlock(hex(block_number))
+    return celo_mainnet_eth.getBlock(hex(block_number))
 
 def get_latest_block(celo_mainnet_web3): 
     celo_mainnet_web3.middleware_onion.clear()
@@ -56,13 +55,10 @@ alfajores_address = alfajores_address_provider.functions.getLendingPool().call()
 celo_mainnet_address = celo_mainnet_address_provider.functions.getLendingPool().call() 
 alfajores_lendingPool = celo_mainnet_eth.contract(address= alfajores_address, abi= Lending_Pool) 
 celo_mainnet_lendingPool = celo_mainnet_eth.contract(address=celo_mainnet_address, abi= Lending_Pool)
-celo_mainnet_latest_block = get_latest_block(celo_mainnet_web3)
+celo_mainnet_latest_block = get_latest_block(Kit('https://forno.celo.org').w3)
 print("Latest scanned block number " + str(celo_mainnet_latest_block))
 
 gas_contract = celo_mainnet_kit.base_wrapper.create_and_get_contract_by_name('GasPriceMinimum')
-w3 = Web3(Web3.HTTPProvider('https://forno.celo.org'))
-eth = w3.eth
-lending_contract = w3.eth.contract(address='0xc1548F5AA1D76CDcAB7385FA6B5cEA70f941e535', abi=Lending_Pool)
 
 
 def get_all_moola_logs(from_block, to_block):
@@ -77,8 +73,8 @@ def get_all_moola_logs(from_block, to_block):
     #     moola_logs += current_moola_logs
     #     # print(len(current_moola_logs))    
     #     start, end = end+1, end+10000 
-    event_filter = eth.filter({"address": '0xc1548F5AA1D76CDcAB7385FA6B5cEA70f941e535', 'fromBlock':w3.toHex(start), 'toBlock': w3.toHex(to_block)})
-    current_moola_logs = eth.getFilterLogs(event_filter.filter_id)
+    event_filter = celo_mainnet_eth.filter({"address": '0xc1548F5AA1D76CDcAB7385FA6B5cEA70f941e535', 'fromBlock':celo_mainnet_web3.toHex(start), 'toBlock': celo_mainnet_web3.toHex(to_block)})
+    current_moola_logs = celo_mainnet_eth.getFilterLogs(event_filter.filter_id)
     moola_logs += current_moola_logs
     print("\nFinal total logs:" + str(len(moola_logs)))
     return moola_logs
@@ -215,7 +211,7 @@ def get_addresses(from_block, to_block):
     tx_hashes = [log['transactionHash'] for log in logs] 
    
     for tx_hash in tx_hashes:
-        receipt = eth.getTransactionReceipt(tx_hash)
+        receipt = celo_mainnet_eth.getTransactionReceipt(tx_hash)
         if is_address(receipt['from']):
             fromto_addresses.append(receipt['from'])    
         if is_address(receipt['to']):
@@ -361,10 +357,10 @@ def get_user_activity(from_block, to_block):
         specific_event_data = []
         end = start+10000
         while end<to_block:
-            event_filter = lending_contract.events[event].createFilter(fromBlock=celo_mainnet_web3.toHex(start), toBlock=celo_mainnet_web3.toHex(end))
+            event_filter = celo_mainnet_lendingPool.events[event].createFilter(fromBlock=celo_mainnet_web3.toHex(start), toBlock=celo_mainnet_web3.toHex(end))
             specific_event_data += event_filter.get_all_entries()
             start, end = end+1, end+10000 
-        event_filter = lending_contract.events[event].createFilter(fromBlock=celo_mainnet_web3.toHex(start), toBlock=celo_mainnet_web3.toHex(to_block))
+        event_filter = celo_mainnet_lendingPool.events[event].createFilter(fromBlock=celo_mainnet_web3.toHex(start), toBlock=celo_mainnet_web3.toHex(to_block))
         specific_event_data += event_filter.get_all_entries()
         # print(events[event] + " event:")
         # print(len(specific_event_data))
@@ -383,10 +379,7 @@ def get_user_activity(from_block, to_block):
                     'coinType': coins[e['args']['_reserve']],
                     'amount': amount,
                 })
-           
-            
         all_event_data[event] = specific_event_data
-    
     return user_activities
 
 coin_reserve_address = {

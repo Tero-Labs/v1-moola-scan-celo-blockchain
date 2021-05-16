@@ -6,8 +6,8 @@ URL = "http://moola-downstream-api.herokuapp.com/"
 
 def dump_data(api_url, params, method):
     # time.sleep(1)
-    print(URL+api_url+"?"+urlencode(params))
-    # print("", end="")
+    # print(URL+api_url+"?"+urlencode(params))
+    print("", end="")
     # for k, v in params.items():
     #     print(k + ": " + str(v))
     #     print(type(v))
