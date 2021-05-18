@@ -1,7 +1,7 @@
 from celo_sdk.kit import Kit
 import json
-import time, datetime
-import string, time
+import datetime
+import string
 import call_api
 from datetime import datetime as dt
 from pycoingecko import CoinGeckoAPI
@@ -18,11 +18,7 @@ with open("./abis/LendingPoolAddressesProvider.json") as f:
     Lending_Pool_Addresses_Provider = json.load(f) 
 with open("./abis/LendingPool.json") as f:
     Lending_Pool = json.load(f)
-    
-# with open("./abis/LendingPoolCore.json") as f:
-#     Lending_Pool_Core = json.load(f)  
-# with open("./abis/LendingPoolDataProvider.json") as f:
-#     Lending_Pool_Data_Provider = json.load(f)      
+         
 unique_addresses = []
 
 def getInEther(num):
@@ -64,15 +60,15 @@ gas_contract = celo_mainnet_kit.base_wrapper.create_and_get_contract_by_name('Ga
 def get_all_moola_logs(from_block, to_block):
     start = from_block
     # start = 6510004
-    
+    # number_of_moola_blocks = 0
     end, moola_logs = start+10000, []
-    # while end<celo_mainnet_latest_block:
-    #     # print("\n" + str(start)+"-"+str(end))
-    #     event_filter = celo_mainnet_eth.filter({"address": celo_mainnet_lendingPool.address, 'fromBlock':celo_mainnet_web3.toHex(start), 'toBlock': celo_mainnet_web3.toHex(end)})
-    #     current_moola_logs = celo_mainnet_eth.getFilterLogs(event_filter.filter_id)
-    #     moola_logs += current_moola_logs
-    #     # print(len(current_moola_logs))    
-    #     start, end = end+1, end+10000 
+    while end<to_block:
+        # print("\n" + str(start)+"-"+str(end))
+        event_filter = celo_mainnet_eth.filter({"address": celo_mainnet_lendingPool.address, 'fromBlock':celo_mainnet_web3.toHex(start), 'toBlock': celo_mainnet_web3.toHex(end)})
+        current_moola_logs = celo_mainnet_eth.getFilterLogs(event_filter.filter_id)
+        moola_logs += current_moola_logs
+        # print(len(current_moola_logs))    
+        start, end = end+1, end+10000 
     event_filter = celo_mainnet_eth.filter({"address": '0xc1548F5AA1D76CDcAB7385FA6B5cEA70f941e535', 'fromBlock':celo_mainnet_web3.toHex(start), 'toBlock': celo_mainnet_web3.toHex(to_block)})
     current_moola_logs = celo_mainnet_eth.getFilterLogs(event_filter.filter_id)
     moola_logs += current_moola_logs
@@ -122,8 +118,6 @@ def get_lending_pool_reserve_data(reserve_address):
     }
     return parsed_data
 
-
-
 def get_lending_pool_data():
     coins = get_coins()
     lending_pool_data = []
@@ -157,8 +151,7 @@ def get_user_account_data(unique_addresses):
             "CurrentLiquidationThreshold": user_account_data[5],
             "LoanToValuePercentage": user_account_data[6],
             "HealthFactor": getInEther(user_account_data[7])
-        }
-        
+        } 
         all_user_account_data.append({
             "UserAddress": address,
             "UserData": parsedUserAccountData 
@@ -209,7 +202,6 @@ def get_addresses(from_block, to_block):
     fromto_addresses = []
     log_addresses = []
     tx_hashes = [log['transactionHash'] for log in logs] 
-   
     for tx_hash in tx_hashes:
         receipt = celo_mainnet_eth.getTransactionReceipt(tx_hash)
         if is_address(receipt['from']):
@@ -222,28 +214,28 @@ def get_addresses(from_block, to_block):
     log_unique_addresses = list(set(log_addresses))    
     fromto_unique_addresses = list(set(fromto_addresses))    
     unique_addresses = list(set(fromto_addresses+log_addresses))
-    # store_addresses(log_unique_addresses, fromto_unique_addresses, unique_addresses)
+    store_addresses(log_unique_addresses, fromto_unique_addresses, unique_addresses)
     return (log_unique_addresses, fromto_unique_addresses, unique_addresses)
 
 def store_addresses(log_unique_addresses, fromto_unique_addresses, unique_addresses):
     print("Number of From to unique addresses: " + str(len(fromto_unique_addresses)))    
     print("Number of log unique addresses: " + str(len(log_unique_addresses)))    
-    print("Number of log unique addresses: " + str(len(unique_addresses)))    
+    print("Number of unique addresses: " + str(len(unique_addresses)))    
 
-    file = open("addresses1.txt", "w")
-    file.write("From to:\n")
-    for address in fromto_unique_addresses:
-        file.write(address+"\n")
-    file.write("\nLog:\n")
-    for address in log_unique_addresses:
-        file.write(address+"\n")
-    file.close()
+    # file = open("addresses1.txt", "w")
+    # file.write("From to:\n")
+    # for address in fromto_unique_addresses:
+    #     file.write(address+"\n")
+    # file.write("\nLog:\n")
+    # for address in log_unique_addresses:
+    #     file.write(address+"\n")
+    # file.close()
 
-    file = open("uniqueAddresses1.txt", "w")
+    file = open("uniqueAddresses.txt", "w")
+    print(len(unique_addresses))
     for address in unique_addresses:
         file.write(address+"\n")
     file.close()
-
     # addresses = [log['address'] for log in logs] 
     # print(addresses)
     # unique_addresses = list(set(addresses)) 
@@ -261,25 +253,28 @@ def store_addresses_with_no_value(addresses_with_no_value):
             file.write(address+"\n")
 
 def call_apis_for_lending_pool(all_lending_pool_data):
-    
+    total_calls = 0
     for lending_pool_data in all_lending_pool_data:
         coin_name = lending_pool_data["CoinName"]
-        
-        
         call_api.dump_reserve_config_data(coin_name, lending_pool_data["ConfigData"]["LoanToValuePercentage"], lending_pool_data["ConfigData"]["LiquidationThreshold"], lending_pool_data["ConfigData"]["LiquidationBonus"], lending_pool_data["ConfigData"]["InterestRateStrategyAddress"], lending_pool_data["ConfigData"]["UsageAsCollateralEnabled"], lending_pool_data["ConfigData"]["BorrowingEnabled"], lending_pool_data["ConfigData"]["StableBorrowRateEnabled"], lending_pool_data["ConfigData"]["isActive"]) 
        
         call_api.dump_reserve_data(coin_name, lending_pool_data["Data"]["TotalLiquidity"], lending_pool_data["Data"]["AvailableLiquidity"], lending_pool_data["Data"]["TotalBorrowsStable"], lending_pool_data["Data"]["TotalBorrowsVariable"], lending_pool_data["Data"]["LiquidityRate"], lending_pool_data["Data"]["VariableRate"], lending_pool_data["Data"]["StableRate"], lending_pool_data["Data"]["AverageStableRate"], lending_pool_data["Data"]["UtilizationRate"], lending_pool_data["Data"]["LiquidityIndex"], lending_pool_data["Data"]["VariableBorrowIndex"], lending_pool_data["Data"]["MToken"], lending_pool_data["Data"]["LastUpdate"])
+        total_calls+=2
+    return total_calls
 
 def cal_apis_for_user_account_data(all_user_data):
     for user_data in  all_user_data:
         call_api.dump_user_account_data(user_data["UserAddress"], user_data["UserData"]["TotalLiquidityETH"], user_data["UserData"]["TotalCollateralETH"], user_data["UserData"]["TotalBorrowsETH"], user_data["UserData"]["TotalFeesETH"], user_data["UserData"]["AvailableBorrowsETH"], user_data["UserData"]["CurrentLiquidationThreshold"], user_data["UserData"]["LoanToValuePercentage"], user_data["UserData"]["HealthFactor"])
 
 def cal_apis_for_user_reserve_data(all_user_reserve_data):
+    total_calls = 0
     for user_reserve_data in  all_user_reserve_data:
         coin_name = user_reserve_data["Coin"]
         all_data = user_reserve_data["Data"]
         for data in all_data:
+            total_calls += 1
             call_api.dump_user_reserve_data(coin_name, data["UserAddress"], data["UserReserveData"]["Deposited"], data["UserReserveData"]["Borrowed"], data["UserReserveData"]["Debt"], data["UserReserveData"]["RateMode"], data["UserReserveData"]["BorrowRate"], data["UserReserveData"]["LiquidityRate"], data["UserReserveData"]["OriginationFee"], data["UserReserveData"]["BorrowIndex"], data["UserReserveData"]["LastUpdate"], data["UserReserveData"]["IsCollateral"])
+    return total_calls
 
 def call_apis_for_useractivity_data(user_activities):
     for user_activity in user_activities:
@@ -287,26 +282,50 @@ def call_apis_for_useractivity_data(user_activities):
 
 
 def bootstrap():
-    from_block, to_block = 3410001, 3410001+10000
+    number_of_calls = 0
+    # from_block, to_block = 3410001, celo_mainnet_latest_block   
+    from_block, to_block = celo_mainnet_latest_block-100, celo_mainnet_latest_block
     log_unique_addresses, fromto_unique_addresses, unique_addresses = get_addresses(from_block, to_block)
+    # unique_addresses = get_adderesses_from_file()
     print(len(unique_addresses))
     all_lending_pool_data = get_lending_pool_data()
-    call_apis_for_lending_pool(all_lending_pool_data)
-    print(all_lending_pool_data[0])
+    number_of_calls += call_apis_for_lending_pool(all_lending_pool_data)
+    # print(all_lending_pool_data[0])
+    number_of_calls += len(unique_addresses)
     call_api.dump_user_addresses(unique_addresses, from_block, to_block)
     all_user_account_data = get_user_account_data(unique_addresses)
+    number_of_calls += len(all_user_account_data)
     cal_apis_for_user_account_data(all_user_account_data)
-    print(all_user_account_data[0])
+    # print(all_user_account_data[0])
     all_user_reserve_data = get_user_reserve_data(unique_addresses)
-    cal_apis_for_user_reserve_data(all_user_reserve_data)
-    print(all_user_reserve_data[0])
+    number_of_calls += cal_apis_for_user_reserve_data(all_user_reserve_data)
+    # print(all_user_reserve_data[0])
     user_activities = get_user_activity(from_block, to_block)
-    print(user_activities[0])   
+    # print(user_activities)
+    # print(user_activities[0])   
+    number_of_calls += len(user_activities)
     call_apis_for_useractivity_data(user_activities)
     call_api.dump_latest_scanned_block_number(to_block)
+    print("Number of calls: " + str(number_of_calls+1))
 
 def update():
-    pass
+    number_of_calls = 0
+    # from_block, to_block = 6721328, celo_mainnet_latest_block
+    from_block, to_block = 3410001, celo_mainnet_latest_block
+    log_unique_addresses, fromto_unique_addresses, unique_addresses = get_addresses(from_block, to_block)
+    all_lending_pool_data = get_lending_pool_data()
+    number_of_calls += call_apis_for_lending_pool(all_lending_pool_data)
+    number_of_calls += len(unique_addresses)
+    call_api.dump_user_addresses(unique_addresses, from_block, to_block)
+    all_user_account_data = get_user_account_data(unique_addresses)
+    number_of_calls += len(all_user_account_data)
+    cal_apis_for_user_account_data(all_user_account_data)
+    all_user_reserve_data = get_user_reserve_data(unique_addresses)
+    number_of_calls += cal_apis_for_user_reserve_data(all_user_reserve_data)
+    user_activities = get_user_activity(from_block, to_block) 
+    number_of_calls += len(user_activities)
+    call_apis_for_useractivity_data(user_activities)
+    call_api.dump_latest_scanned_block_number(to_block)
 
 def get_exchange_rate(coin):
     print("Coin name: " + coin)
@@ -348,7 +367,6 @@ coins = {
     '0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73': 'ceuro'
 }
 
-
 def get_user_activity(from_block, to_block):
     all_event_data, user_activities = {}, []
     for event in events.keys():
@@ -380,6 +398,9 @@ def get_user_activity(from_block, to_block):
                     'amount': amount,
                 })
         all_event_data[event] = specific_event_data
+    # for e in all_event_data:
+    #     for data in all_event_data[e]:
+    #         print(data)
     return user_activities
 
 coin_reserve_address = {
@@ -415,12 +436,11 @@ def wei_to_celo(price_in_wei):
 def get_fee(activity, amount, coin_name):
     return estimate_gas_amount(activity, amount, coin_name) * (wei_to_celo(get_gas_price(coin_name)))
 
-
-
 def main():
     # store_addresses()    
     # print(unique_addresses)
     # print(len(unique_addresses))
+    
     bootstrap()
     # block_info = get_block_info(celo_mainnet_latest_block)
     # print(celo_mainnet_latest_block)
@@ -431,7 +451,6 @@ def main():
     # print(get_exchange_rate('Celo'))
     # print(get_exchange_rate('Cusd'))
     # print(get_exchange_rate('Ceur'))
-    
     # print(get_gas_price('celo'))
     # print(get_gas_price('cusd'))
     # print(get_gas_price('ceuro'))
@@ -442,7 +461,12 @@ def main():
 
 
 if __name__=="__main__": 
-    start = time.time()
+    start = dt.now()
+    print("Start time: "+ start.strftime('"%Y-%m-%d %H:%M:%S"'))
     main()
-    end = time.time()
-    print("time: " + str(datetime.timedelta(seconds = end-start)))
+    end = dt.now()
+    print("End time: "+ end.strftime("%Y-%m-%d %H:%M:%S"))
+    difference = end - start
+    hours, remainder = divmod(difference.seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    print('Time: ' + '{:02}:{:02}:{:02}'.format(int(hours), int(minutes), int(seconds)))
