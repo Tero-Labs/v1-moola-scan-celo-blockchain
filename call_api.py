@@ -7,28 +7,28 @@ URL = "http://moola-downstream-api.herokuapp.com/"
 def dump_data(api_url, params, method):
     # time.sleep(1)
     # print(URL+api_url+"?"+urlencode(params))
-    # print("", end="")
+    print("", end="")
     # for k, v in params.items():
     #     print(k + ": " + str(v))
     #     print(type(v))
-    try:
-        response = ''
-        if method == 'GET':
-            response = requests.get(
-                URL+api_url,
-                params = params    
-            ) 
-        elif method == 'POST': 
-            response = requests.post(
-                URL+api_url,
-                data = params    
-            )
-        if (response.status_code == 200):
-            print("The request was a success!")
-        response.raise_for_status()
-    # Additional code will only run if the request is successful
-    except requests.exceptions.HTTPError as error:
-        print(error)
+    # try:
+    #     response = ''
+    #     if method == 'GET':
+    #         response = requests.get(
+    #             URL+api_url,
+    #             params = params    
+    #         ) 
+    #     elif method == 'POST': 
+    #         response = requests.post(
+    #             URL+api_url,
+    #             data = params    
+    #         )
+    #     if (response.status_code == 200):
+    #         print("The request was a success!")
+    #     response.raise_for_status()
+    # # Additional code will only run if the request is successful
+    # except requests.exceptions.HTTPError as error:
+    #     print(error)
 
 def dump_reserve_config_data(CoinType, LoanToValuePercentage, LiquidationThreshold, LiquidationBonus, InterestRateStrategyAddress, UsageAsCollateralEnabled, BorrowingEnabled, StableBorrowRateEnabled, isActive):
     dump_data('set/insert/db_celo_mainnet/tbl_reserve_configuration', {'coin_name': CoinType,'ltv': LoanToValuePercentage, 'liquidation_threshold': LiquidationThreshold, 'liquidation_discount': LiquidationBonus, 'interest_rate_strategy_address': InterestRateStrategyAddress[2:], 'usage_as_collateral_enabled': UsageAsCollateralEnabled, 'usage_as_collateral_enabled__Type': 'bool', 'borrowing_enabled': BorrowingEnabled, 'borrowing_enabled__Type': 'bool', 'stable_borrow_rate_enabled': StableBorrowRateEnabled, 'stable_borrow_rate_enabled__Type': 'bool', 'enabled': isActive, 'enabled__Type': 'bool', 'agent_id':0}, 'GET')
@@ -54,3 +54,7 @@ def dump_user_activity_data(address, coinType, activityType, amount):
 
 def dump_latest_scanned_block_number(blockNumber):
     dump_data('set/insert/db_celo_mainnet/tbl_block_number', {'block_number': blockNumber, 'agent_id':0}, 'GET')
+
+def dump_coin_exchange_rate(coinName, network, usdExchangeRate):
+    print(coinName, network, usdExchangeRate)
+    dump_data('set/insert/db_celo_mainnet/tbl_coins', {'coin_name': coinName, 'network': network, 'usd_exchange_rate':usdExchangeRate}, 'GET')
