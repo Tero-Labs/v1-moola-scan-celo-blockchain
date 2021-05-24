@@ -57,4 +57,4 @@ def dump_latest_scanned_block_number(blockNumber):
 
 def dump_coin_exchange_rate(coinName, network, usdExchangeRate):
     print(coinName, network, usdExchangeRate)
-    dump_data('set/insert/db_celo_mainnet/tbl_coins', {'coin_name': coinName, 'network': network, 'usd_exchange_rate':usdExchangeRate}, 'GET')
+    dump_data('set/insert/db_celo_mainnet/tbl_coin_exchange_rate', {'coin_name': coinName, 'network_name': network, 'usd_exchange_rate':usdExchangeRate,  'agent_id':0}, 'GET')

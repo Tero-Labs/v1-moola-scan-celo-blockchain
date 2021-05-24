@@ -18,7 +18,9 @@ with open("./abis/LendingPoolAddressesProvider.json") as f:
     Lending_Pool_Addresses_Provider = json.load(f) 
 with open("./abis/LendingPool.json") as f:
     Lending_Pool = json.load(f)
-         
+with open("./abis/IPriceOracleGetter.json") as f:
+    IPrice_Oracle_Getter = json.load(f)         
+
 unique_addresses = []
 
 def getInEther(num):
@@ -38,24 +40,19 @@ def get_latest_block(celo_mainnet_web3):
     blocksLatest = celo_mainnet_web3.eth.getBlock("latest")
     return int(blocksLatest["number"], 16)    
 
-alfajores_kit = Kit('https://alfajores-forno.celo-testnet.org')
 celo_mainnet_kit = Kit('https://forno.celo.org')
-alfajores_web3 = alfajores_kit.w3
-alfajores_eth = alfajores_web3.eth
 celo_mainnet_web3 = celo_mainnet_kit.w3
 celo_mainnet_eth = celo_mainnet_web3.eth        
-
-alfajores_address_provider = alfajores_eth.contract(address='0x6EAE47ccEFF3c3Ac94971704ccd25C7820121483', abi=Lending_Pool_Addresses_Provider) 
 celo_mainnet_address_provider = celo_mainnet_eth.contract(address='0x7AAaD5a5fa74Aec83b74C2a098FBC86E17Ce4aEA', abi=Lending_Pool_Addresses_Provider) 
-alfajores_address = alfajores_address_provider.functions.getLendingPool().call()
+price_oracle_address = celo_mainnet_address_provider.functions.getPriceOracle().call()
 celo_mainnet_address = celo_mainnet_address_provider.functions.getLendingPool().call() 
-print(alfajores_address)
-alfajores_lendingPool = celo_mainnet_eth.contract(address= alfajores_address, abi= Lending_Pool) 
+print(celo_mainnet_address)
+
 celo_mainnet_lendingPool = celo_mainnet_eth.contract(address=celo_mainnet_address, abi= Lending_Pool)
+price_oracle = celo_mainnet_eth.contract(address=price_oracle_address, abi= IPrice_Oracle_Getter)
+print(price_oracle.functions.getAssetPrice("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE").call()/ether)
 celo_mainnet_latest_block = get_latest_block(Kit('https://forno.celo.org').w3)
 print("Latest scanned block number " + str(celo_mainnet_latest_block))
-
-gas_contract = celo_mainnet_kit.base_wrapper.create_and_get_contract_by_name('GasPriceMinimum')
 
 def get_all_moola_logs(from_block, to_block):
     start = from_block
@@ -221,7 +218,6 @@ def store_addresses(log_unique_addresses, fromto_unique_addresses, unique_addres
     print("Number of From to unique addresses: " + str(len(fromto_unique_addresses)))    
     print("Number of log unique addresses: " + str(len(log_unique_addresses)))    
     print("Number of unique addresses: " + str(len(unique_addresses)))    
-
     # file = open("addresses1.txt", "w")
     # file.write("From to:\n")
     # for address in fromto_unique_addresses:
@@ -230,7 +226,6 @@ def store_addresses(log_unique_addresses, fromto_unique_addresses, unique_addres
     # for address in log_unique_addresses:
     #     file.write(address+"\n")
     # file.close()
-
     file = open("uniqueAddresses.txt", "w")
     print(len(unique_addresses))
     for address in unique_addresses:
@@ -281,19 +276,19 @@ def call_apis_for_useractivity_data(user_activities):
         call_api.dump_user_activity_data(user_activity['address'], user_activity['coinType'], user_activity['activityType'], user_activity['amount'])
 
 def call_apis_for_exchange_rate():
-    call_api.dump_coin_exchange_rate( 'celo', 'celo mainnet', get_exchange_rate_in_usd('celo'))
-    call_api.dump_coin_exchange_rate('cusd', 'celo mainnet', get_exchange_rate_in_usd('celo-dollar'))
-    call_api.dump_coin_exchange_rate('ceuro', 'celo mainnet', get_exchange_rate_in_usd('universal-euro'))
+    coins = get_coins()
+    for coin in coins:
+        call_api.dump_coin_exchange_rate(coin["name"], 'celo mainnet', get_exchange_rate_in_usd(coin["name"], coin["reserve_address"] ))
 
 
 def bootstrap():
-    # number_of_calls = 0
+    number_of_calls = 0
     # # from_block, to_block = 3410001, celo_mainnet_latest_block   
     from_block, to_block = celo_mainnet_latest_block-1000, celo_mainnet_latest_block
     call_apis_for_exchange_rate()
     # log_unique_addresses, fromto_unique_addresses, unique_addresses = get_addresses(from_block, to_block)
     # # unique_addresses = get_adderesses_from_file()
-    # print(len(unique_addresses))
+    # # print(len(unique_addresses))
     # all_lending_pool_data = get_lending_pool_data()
     # number_of_calls += call_apis_for_lending_pool(all_lending_pool_data)
     # # print(all_lending_pool_data[0])
@@ -307,8 +302,7 @@ def bootstrap():
     # number_of_calls += cal_apis_for_user_reserve_data(all_user_reserve_data)
     # # print(all_user_reserve_data[0])
     # user_activities = get_user_activity(from_block, to_block)
-    # print(user_activities)
-    # print(user_activities[0])   
+    # # print(user_activities[0])   
     # number_of_calls += len(user_activities)
     # call_apis_for_useractivity_data(user_activities)
     # call_api.dump_latest_scanned_block_number(to_block)
@@ -333,8 +327,9 @@ def update():
     call_apis_for_useractivity_data(user_activities)
     call_api.dump_latest_scanned_block_number(to_block)
 
-def get_exchange_rate_in_usd(coin):
-    return cg.get_price(ids=coin, vs_currencies='usd')[coin]['usd']
+def get_exchange_rate_in_usd(coin_name, coin_address):
+    price_in_celo = (price_oracle.functions.getAssetPrice(coin_address).call()/ether)
+    return price_in_celo*cg.get_price(ids='celo', vs_currencies='usd')['celo']['usd']
 
 def get_exchange_rate(coin):
     celo_in_usd = cg.get_price(ids='celo', vs_currencies='usd')['celo']['usd']
@@ -396,7 +391,7 @@ def get_user_activity(from_block, to_block):
                 if event == 'LiquidationCall':
                     amount = e['args']['_liquidatedCollateralAmount']
                 elif event == 'Repay':
-                    amount = e['args']['_amountMinusFees']
+                    amount = e['args']['_amountMinusFees'] + e['args']['_fees']
                 else:
                     amount = e['args']['_amount']
                 user_activities.append({
@@ -406,62 +401,21 @@ def get_user_activity(from_block, to_block):
                     'amount': amount,
                 })
         all_event_data[event] = specific_event_data
-    for e in all_event_data:
-        for data in all_event_data[e]:
-            print()
-            print(data)
+    # for e in all_event_data:
+    #     for data in all_event_data[e]:
+    #         print()
+    #         print(data)
     return user_activities
-
-coin_reserve_address = {
-        "celo": "0x471EcE3750Da237f93B8E339c536989b8978a438",
-        "cusd": "0x765DE816845861e75A25fCA122bb6898B8B1282a",
-        "ceuro":"0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73"
-}
-
-def get_gas_price(coin_name):    
-    return gas_contract.get_gas_price_minimum(coin_reserve_address[coin_name.lower()])
-
-def estimate_gas_amount(activity, amount, coin_name):
-    if activity == 'deposit':
-        return alfajores_lendingPool.functions.deposit(coin_reserve_address[coin_name.lower()], amount, 0).estimateGas({
-            'from': alfajores_web3.toChecksumAddress('0x011ce5bd73a744b2b5d12265be37250defb5b590'), 
-        })
-    elif activity == 'borrow':
-        return alfajores_lendingPool.functions.borrow(coin_reserve_address[coin_name.lower()], amount, 1, 0).estimateGas({
-            'from': alfajores_web3.toChecksumAddress('0x011ce5bd73a744b2b5d12265be37250defb5b590'), 
-        })
-    elif activity == 'repay':
-        return alfajores_lendingPool.functions.repay(coin_reserve_address[coin_name.lower()], amount, alfajores_web3.toChecksumAddress('0x011ce5bd73a744b2b5d12265be37250defb5b590')).estimateGas({
-            'from': alfajores_web3.toChecksumAddress('0x011ce5bd73a744b2b5d12265be37250defb5b590'), 
-        })
-    elif activity == 'withdraw':
-        return alfajores_lendingPool.functions.redeemUnderlying(coin_reserve_address[coin_name.lower()], alfajores_web3.toChecksumAddress('0x011ce5bd73a744b2b5d12265be37250defb5b590'), amount, 0).estimateGas({
-            'from': alfajores_web3.toChecksumAddress('0x011ce5bd73a744b2b5d12265be37250defb5b590'), 
-        })
-    
-def wei_to_celo(price_in_wei):
-    return ((price_in_wei/ether)*cg.get_price(ids='ethereum', vs_currencies='usd')['ethereum']['usd'])/cg.get_price(ids='celo', vs_currencies='usd')['celo']['usd']
-
-def get_fee(activity, amount, coin_name):
-    return estimate_gas_amount(activity, amount, coin_name) * (wei_to_celo(get_gas_price(coin_name)))
 
 def main():
     # store_addresses()    
     # print(unique_addresses)
     # print(len(unique_addresses))
-    # bootstrap()
+    bootstrap()
     # block_info = get_block_info(celo_mainnet_latest_block)
     # print(celo_mainnet_latest_block)
     # print(block_info)
-    print(get_fee("deposit", 150, 'celo'))
-    print(get_fee("deposit", 150, 'cusd'))
-    print(get_fee("deposit", 150, 'ceuro'))
-    print(get_fee("borrow", 150, 'celo'))
-    print(get_fee("repay", 150, 'celo'))
-    print(get_fee("withdraw", 150, 'celo'))
-    # print(get_exchange_rate('Celo'))
-    # print(get_exchange_rate('Cusd'))
-    # print(get_exchange_rate('Ceur'))
+  
     # print(get_gas_price('celo'))
     # print(get_gas_price('cusd'))
     # print(get_gas_price('ceuro'))
