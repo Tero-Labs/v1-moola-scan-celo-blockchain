@@ -46,8 +46,8 @@ celo_mainnet_eth = celo_mainnet_web3.eth
 celo_mainnet_address_provider = celo_mainnet_eth.contract(address='0x7AAaD5a5fa74Aec83b74C2a098FBC86E17Ce4aEA', abi=Lending_Pool_Addresses_Provider) 
 price_oracle_address = celo_mainnet_address_provider.functions.getPriceOracle().call()
 celo_mainnet_address = celo_mainnet_address_provider.functions.getLendingPool().call() 
-print(celo_mainnet_address)
-
+# print(celo_mainnet_address)
+# print(price_oracle_address) 0x568547688121AA69bDEB8aEB662C321c5D7B98D0
 celo_mainnet_lendingPool = celo_mainnet_eth.contract(address=celo_mainnet_address, abi= Lending_Pool)
 price_oracle = celo_mainnet_eth.contract(address=price_oracle_address, abi= IPrice_Oracle_Getter)
 print(price_oracle.functions.getAssetPrice("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE").call()/ether)
@@ -74,11 +74,11 @@ def get_all_moola_logs(from_block, to_block):
 
 def get_coins():
     coins = [{
-        'name':"celo", "reserve_address": '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
+        'name':"Celo", "reserve_address": '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
     }, {
-        'name':"cusd", "reserve_address": '0x765DE816845861e75A25fCA122bb6898B8B1282a'  
+        'name':"cUSD", "reserve_address": '0x765DE816845861e75A25fCA122bb6898B8B1282a'  
     }, {
-        'name':"ceuro", "reserve_address": '0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73'  
+        'name':"cEURO", "reserve_address": '0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73'  
     }]
     return coins
 
