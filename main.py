@@ -4,10 +4,12 @@ import datetime
 import string
 import call_api
 from datetime import datetime as dt
-
+from pycoingecko import CoinGeckoAPI
 from web3 import Web3
 
 
+
+cg = CoinGeckoAPI()
 
 ray = 1000000000000000000000000000
 ether = 1000000000000000000

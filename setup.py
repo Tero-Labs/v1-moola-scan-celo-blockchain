@@ -9,7 +9,7 @@ setuptools.setup(
     install_requires=[
         "requests==2.24.0",
         "web3==5.12.0",
-       
+        "pycoingecko==2.0.0"
     ],
     classifiers=[
         "License :: OSI Approved :: Apache License 2.0",
