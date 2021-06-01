@@ -314,7 +314,7 @@ def call_apis_for_exchange_rate(block_number):
 def bootstrap():
     # from_block, to_block, number_of_calls = 3410001, celo_mainnet_latest_block, 0   
     # from_block, to_block, number_of_calls = 3410001, 6876412, 0  
-    from_block, to_block, number_of_calls = 6876412, 6990783, 0  
+    from_block, to_block, number_of_calls = 6876412, 6994224, 0  
     unique_addresses = get_addresses(from_block, to_block)
     # unique_addresses = get_adderesses_from_file()
     celo_mainnet_latest_block = get_latest_block(helper_w3)
@@ -503,6 +503,7 @@ def main():
     # store_addresses()    
     # print(unique_addresses)
     # print(len(unique_addresses))
+    
     bootstrap()
     # update()
     # user_reserve_data_c = celo_mainnet_lendingPool.functions.getUserReserveData('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', celo_mainnet_web3.toChecksumAddress('0xFf447b6b29Cc2000afB7125c560E18F4DC109993')).call(block_identifier=6936112)
