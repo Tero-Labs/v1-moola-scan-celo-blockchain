@@ -314,7 +314,8 @@ def call_apis_for_exchange_rate(block_number):
 def bootstrap():
     # from_block, to_block, number_of_calls = 3410001, celo_mainnet_latest_block, 0   
     # from_block, to_block, number_of_calls = 3410001, 6876412, 0  
-    from_block, to_block, number_of_calls = 6876412, 6994224, 0  
+    # Last updated: 6876412, 6994224
+    from_block, to_block, number_of_calls = 6876412, 6876422, 0  
     unique_addresses = get_addresses(from_block, to_block)
     # unique_addresses = get_adderesses_from_file()
     celo_mainnet_latest_block = get_latest_block(helper_w3)
