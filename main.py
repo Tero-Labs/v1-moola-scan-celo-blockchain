@@ -9,8 +9,6 @@ from web3 import Web3
 
 
 
-cg = CoinGeckoAPI()
-
 ray = 1000000000000000000000000000
 ether = 1000000000000000000
          
