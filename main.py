@@ -357,8 +357,8 @@ def update(latest_block):
     # from_block, to_block = 3410001, celo_mainnet_latest_block
     current_latest_block = get_latest_block(helper_w3)
     while latest_block > current_latest_block:
-        print("Ahead of the celo blockchain")
-        print(latest_block, current_latest_block)
+        # print("Ahead of the celo blockchain")
+        # print(latest_block, current_latest_block)
         current_latest_block = get_latest_block(helper_w3)
     unique_addresses = get_addresses(from_block, to_block)
     print("Number of unique addresses " + str(len(unique_addresses)))
