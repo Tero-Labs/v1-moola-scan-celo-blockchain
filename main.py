@@ -307,7 +307,7 @@ def bootstrap():
     # from_block, to_block, number_of_calls = 3410001, celo_mainnet_latest_block, 0   
     # from_block, to_block, number_of_calls = 3410001, 6876412, 0  
     # Last updated: 6876412, 6994224 -> 6994225, 6997440 -> 6997442 -> 7015737
-    from_block, to_block = 7021101, 7021325
+    from_block, to_block = 7021326, 7021475
     # celo_mainnet_latest_block = get_latest_block(helper_w3)
     unique_addresses = get_addresses(from_block, to_block)
     print("Number of unique addresses: " +  str(len(unique_addresses)))
@@ -339,7 +339,7 @@ def bootstrap():
     # print("Number of calls: " + str(number_of_calls))
 
 def call_all_apis_for_reserve_and_user_data(from_block, to_block, unique_addresses):
-    print("Number of addresses: " + len(unique_addresses))
+    print("Number of addresses: " + str(len(unique_addresses)))
     all_lending_pool_data = get_lending_pool_data(to_block)
     
     all_user_account_data = get_user_account_data(unique_addresses, to_block)
@@ -501,13 +501,13 @@ def main():
     # store_addresses()    
     # print(unique_addresses)
     # print(len(unique_addresses))
-    # pass
-    # bootstrap()
+    
+    bootstrap()
     # latest_block = get_latest_block_from_db()
-    current_block = 7021326
-    while True:
-        update(current_block)
-        current_block+=1
+    # current_block = 7021326
+    # while True:
+    #     update(current_block)
+    #     current_block+=1
     # user_reserve_data_c = celo_mainnet_lendingPool.functions.getUserReserveData('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', celo_mainnet_web3.toChecksumAddress('0xFf447b6b29Cc2000afB7125c560E18F4DC109993')).call(block_identifier=6936112)
     # print(user_reserve_data_c[0])
     # user_reserve_data_u = celo_mainnet_lendingPool.functions.getUserReserveData('0x765DE816845861e75A25fCA122bb6898B8B1282a', celo_mainnet_web3.toChecksumAddress('0xFf447b6b29Cc2000afB7125c560E18F4DC109993')).call()
