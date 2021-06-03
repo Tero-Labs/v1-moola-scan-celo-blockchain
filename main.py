@@ -218,10 +218,6 @@ def is_address(address):
 
 def get_addresses(from_block, to_block):
     logs = get_all_moola_logs(from_block, to_block)
-    # print(logs[0])
-    # print(celo_mainnet_lendingPool.events.LiquidationCall().getLogs())
-    # fromto_addresses = []
-    # log_addresses = []
     all_addresses = []
     tx_hashes = [log['transactionHash'] for log in logs] 
     for tx_hash in tx_hashes:
@@ -232,12 +228,8 @@ def get_addresses(from_block, to_block):
             all_addresses.append(receipt['to'])
         current_logs = receipt['logs']
         current_addresses = [log['address'] for log in current_logs]
-        all_addresses += current_addresses
-    # log_unique_addresses = list(set(log_addresses))    
-    # fromto_unique_addresses = list(set(fromto_addresses))    
+        all_addresses += current_addresses 
     unique_addresses = list(set(all_addresses))
-    # store_addresses(log_unique_addresses, fromto_unique_addresses, unique_addresses)
-    # return (log_unique_addresses, fromto_unique_addresses, unique_addresses)
     return unique_addresses
 
 def store_addresses(log_unique_addresses, fromto_unique_addresses, unique_addresses):
@@ -274,36 +266,36 @@ def store_addresses_with_no_value(addresses_with_no_value):
             file.write(address+"\n")
 
 def call_apis_for_lending_pool(all_lending_pool_data):
-    number_of_call = 0
+    # number_of_call = 0
     for lending_pool_data in all_lending_pool_data:
         coin_name = lending_pool_data["CoinName"]
         call_api.dump_reserve_config_data(coin_name, lending_pool_data["ConfigData"]["LoanToValuePercentage"], lending_pool_data["ConfigData"]["LiquidationThreshold"], lending_pool_data["ConfigData"]["LiquidationBonus"], lending_pool_data["ConfigData"]["InterestRateStrategyAddress"], lending_pool_data["ConfigData"]["UsageAsCollateralEnabled"], lending_pool_data["ConfigData"]["BorrowingEnabled"], lending_pool_data["ConfigData"]["StableBorrowRateEnabled"], lending_pool_data["ConfigData"]["isActive"], lending_pool_data["ConfigData"]["blockNumber"]) 
        
         call_api.dump_reserve_data(coin_name, lending_pool_data["Data"]["TotalLiquidity"], lending_pool_data["Data"]["AvailableLiquidity"], lending_pool_data["Data"]["TotalBorrowsStable"], lending_pool_data["Data"]["TotalBorrowsVariable"], lending_pool_data["Data"]["LiquidityRate"], lending_pool_data["Data"]["VariableRate"], lending_pool_data["Data"]["StableRate"], lending_pool_data["Data"]["AverageStableRate"], lending_pool_data["Data"]["UtilizationRate"], lending_pool_data["Data"]["LiquidityIndex"], lending_pool_data["Data"]["VariableBorrowIndex"], lending_pool_data["Data"]["MToken"], lending_pool_data["Data"]["LastUpdate"], lending_pool_data["Data"]["blockNumber"])
-        number_of_call += 2
-    return number_of_call
+        # number_of_call += 2
+    # return number_of_call
       
 
 def cal_apis_for_user_account_data(all_user_data):
-    number_of_calls = 0
+    # number_of_calls = 0
     for user_data in  all_user_data:
         call_api.dump_user_account_data(user_data["UserAddress"], user_data["UserData"]["TotalLiquidityETH"], user_data["UserData"]["TotalCollateralETH"], user_data["UserData"]["TotalBorrowsETH"], user_data["UserData"]["TotalFeesETH"], user_data["UserData"]["AvailableBorrowsETH"], user_data["UserData"]["CurrentLiquidationThreshold"], user_data["UserData"]["LoanToValuePercentage"], user_data["UserData"]["HealthFactor"], user_data["UserData"]["blockNumber"])
-        number_of_calls += 1
-    return number_of_calls
+        # number_of_calls += 1
+    # return number_of_calls
 
 def cal_apis_for_user_reserve_data(all_user_reserve_data):
-    number_of_calls = 0
+    # number_of_calls = 0
     for user_reserve_data in  all_user_reserve_data:
         coin_name = user_reserve_data["Coin"]
         all_data = user_reserve_data["Data"]
         for data in all_data:
             call_api.dump_user_reserve_data(coin_name, data["UserAddress"], data["UserReserveData"]["Deposited"], data["UserReserveData"]["Borrowed"], data["UserReserveData"]["Debt"], data["UserReserveData"]["RateMode"], data["UserReserveData"]["BorrowRate"], data["UserReserveData"]["LiquidityRate"], data["UserReserveData"]["OriginationFee"], data["UserReserveData"]["BorrowIndex"], data["UserReserveData"]["LastUpdate"], data["UserReserveData"]["IsCollateral"], data["UserReserveData"]["blockNumber"])
-            number_of_calls += 1
-    return number_of_calls
+            # number_of_calls += 1
+    # return number_of_calls
 
 def call_apis_for_useractivity_data(user_activities):
     for user_activity in user_activities:
-        call_api.dump_user_activity_data(user_activity['address'], user_activity['coinType'], user_activity['activityType'], user_activity['amount'], user_activity['amountOfDebtRepaid'], user_activity['liquidationPrice'], user_activity['tx_hash'], user_activity['block_number'])
+        call_api.dump_user_activity_data(user_activity['address'], user_activity['coinType'], user_activity['activityType'], user_activity['amount'], user_activity['amountOfDebtRepaid'], user_activity['liquidationPrice'], user_activity['tx_hash'], user_activity['timestamp'], user_activity['block_number'])
 
 def call_apis_for_exchange_rate(block_number):
     coins = get_coins()
@@ -314,52 +306,64 @@ def call_apis_for_exchange_rate(block_number):
 def bootstrap():
     # from_block, to_block, number_of_calls = 3410001, celo_mainnet_latest_block, 0   
     # from_block, to_block, number_of_calls = 3410001, 6876412, 0  
-    # Last updated: 6876412, 6994224
-    from_block, to_block, number_of_calls = 6876412, 6876422, 0  
+    # Last updated: 6876412, 6994224 -> 6994225, 6997440 -> 6997442 -> 7015737
+    from_block, to_block = 7021101, 7021325
+    # celo_mainnet_latest_block = get_latest_block(helper_w3)
     unique_addresses = get_addresses(from_block, to_block)
+    print("Number of unique addresses: " +  str(len(unique_addresses)))
+    celo_mainnet_latest_block = get_latest_block(helper_w3)  
+    if len(unique_addresses) == 0:
+        # call_apis_for_exchange_rate(celo_mainnet_latest_block)
+        call_api.dump_latest_scanned_block_number(to_block)
+        return 
     # unique_addresses = get_adderesses_from_file()
-    celo_mainnet_latest_block = get_latest_block(helper_w3)
-    
     all_lending_pool_data = get_lending_pool_data(celo_mainnet_latest_block)
-    
     all_user_account_data = get_user_account_data(unique_addresses, celo_mainnet_latest_block)
     all_user_reserve_data = get_user_reserve_data(unique_addresses, celo_mainnet_latest_block)  
-    call_apis_for_exchange_rate(celo_mainnet_latest_block)
-    number_of_calls += 3
+    # call_apis_for_exchange_rate(celo_mainnet_latest_block)
+    # number_of_calls += 3
     # log_unique_addresses, fromto_unique_addresses, unique_addresses = get_addresses(from_block, to_block)
-    print("Number of unique addresses: " +  str(len(unique_addresses)))
-    number_of_calls += call_apis_for_lending_pool(all_lending_pool_data)
+  
+    call_apis_for_lending_pool(all_lending_pool_data)
     # print(all_lending_pool_data[0])
-    number_of_calls += cal_apis_for_user_account_data(all_user_account_data)
+    cal_apis_for_user_account_data(all_user_account_data)
     # print(all_user_account_data[0])
-    number_of_calls += cal_apis_for_user_reserve_data(all_user_reserve_data)
+    cal_apis_for_user_reserve_data(all_user_reserve_data)
     # print(all_user_reserve_data[0])
-    user_activities = get_user_activity(from_block, to_block, False)
+    user_activities = get_user_activity(from_block, to_block)
     # print(user_activities[0])  
-    number_of_calls += len(user_activities) 
+    # number_of_calls += len(user_activities) 
     call_apis_for_useractivity_data(user_activities)
-    number_of_calls += 1
+    print("Number of user activities:" + str(len(user_activities)))
     call_api.dump_latest_scanned_block_number(to_block)
-    print("Number of calls: " + str(number_of_calls))
+    # print("Number of calls: " + str(number_of_calls))
 
 def call_all_apis_for_reserve_and_user_data(from_block, to_block, unique_addresses):
-    print(len(unique_addresses))
-    all_lending_pool_data = get_lending_pool_data()
+    print("Number of addresses: " + len(unique_addresses))
+    all_lending_pool_data = get_lending_pool_data(to_block)
+    
+    all_user_account_data = get_user_account_data(unique_addresses, to_block)
+    all_user_reserve_data = get_user_reserve_data(unique_addresses, to_block)
     call_apis_for_lending_pool(all_lending_pool_data)
-    all_user_account_data = get_user_account_data(unique_addresses)
     cal_apis_for_user_account_data(all_user_account_data)
-    all_user_reserve_data = get_user_reserve_data(unique_addresses)
     cal_apis_for_user_reserve_data(all_user_reserve_data)
+    call_api.dump_latest_scanned_block_number(to_block)
    
+def get_latest_block_from_db():
+    return 6997441
 
-
-def update(from_block, to_block):
+def update(latest_block):    
+    from_block, to_block = latest_block, latest_block 
     # from_block, to_block = 3410001, celo_mainnet_latest_block
-    celo_mainnet_latest_block = get_latest_block(helper_w3)
-    log_unique_addresses, fromto_unique_addresses, unique_addresses = get_addresses(from_block, to_block)
-    call_all_apis_for_reserve_and_user_data(from_block, to_block, unique_addresses)
-    user_activities = get_user_activity(from_block, to_block)  
-    call_apis_for_useractivity_data(user_activities)
+    unique_addresses = get_addresses(from_block, to_block)
+    print("Number of unique addresses " + str(len(unique_addresses)))
+    if len(unique_addresses) > 0:
+        call_all_apis_for_reserve_and_user_data(from_block, to_block, unique_addresses)
+        user_activities = get_user_activity(from_block, to_block)  
+        call_apis_for_useractivity_data(user_activities)
+        call_api.dump_latest_scanned_block_number(to_block)
+    else:
+        call_api.dump_latest_scanned_block_number(to_block)
 
 def get_exchange_rate_in_usd(coin_name, coin_address):
     price_in_celo = (price_oracle.functions.getAssetPrice(coin_address).call()/ether)
@@ -408,7 +412,7 @@ coins = {
     '0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73': 'ceuro'
 }
 
-def get_user_activity(from_block, to_block, live):
+def get_user_activity(from_block, to_block):
     all_event_data, user_activities = {}, []
     number_of_event = 0
     for event in events.keys():
@@ -433,26 +437,22 @@ def get_user_activity(from_block, to_block, live):
                     amount = e['args']['_liquidatedCollateralAmount']
                     amountOfDebtRepaid = e['args']['_purchaseAmount']
                     liquidation_price = get_liquidation_price(e["blockNumber"], e['args']['_user'])
-                    print("liquidation_price: " + str(liquidation_price))
+                    # print("liquidation_price: " + str(liquidation_price))
                 elif event == 'Repay':
                     amount = e['args']['_amountMinusFees'] + e['args']['_fees']
                     liquidation_price = get_liquidation_price(e["blockNumber"], e['args']['_user'])
-                    print("liquidation_price: " + str(liquidation_price))
+                    # print("liquidation_price: " + str(liquidation_price))
                 elif event == "Borrow":
                     amount = e['args']['_amount']
                     liquidation_price = get_liquidation_price(e["blockNumber"], e['args']['_user'])
-                    print("liquidation_price: " + str(liquidation_price))
+                    # print("liquidation_price: " + str(liquidation_price))
                 else:
                     amount = e['args']['_amount']
-                # if live:
-                #     liquidation_price = 0.8
-                # else:    
-                #     pass
-                # print(event)
-                # print(e)
+        
                 user_activities.append({
                     'activityType': events[event],
-                    'address': e['args']['_user'],
+                    'address': e['args']['_user'], 
+                    'timestamp': dt.fromtimestamp(e['args']['_timestamp']).strftime("%m-%d-%Y %H:%M:%S"),
                     'coinType': coins[e['args']['_reserve']],
                     'amount': amount,
                     'amountOfDebtRepaid': amountOfDebtRepaid,
@@ -460,14 +460,11 @@ def get_user_activity(from_block, to_block, live):
                     'tx_hash': str(e['transactionHash'].hex())[2:],
                     "block_number": e['blockNumber']
                 })
-        all_event_data[event] = specific_event_data
+        # all_event_data[event] = specific_event_data
     # for e in all_event_data:
     #     for data in all_event_data[e]:
     #         print()
     #         print(data)
-    # print(one_user_data)
-    # print(len(all_event_data))
-    # print(number_of_event)
     return user_activities
 
 def get_liquidation_price(block_number, user_pub_key):
@@ -504,9 +501,13 @@ def main():
     # store_addresses()    
     # print(unique_addresses)
     # print(len(unique_addresses))
-    
-    bootstrap()
-    # update()
+    # pass
+    # bootstrap()
+    # latest_block = get_latest_block_from_db()
+    current_block = 7021326
+    while True:
+        update(current_block)
+        current_block+=1
     # user_reserve_data_c = celo_mainnet_lendingPool.functions.getUserReserveData('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', celo_mainnet_web3.toChecksumAddress('0xFf447b6b29Cc2000afB7125c560E18F4DC109993')).call(block_identifier=6936112)
     # print(user_reserve_data_c[0])
     # user_reserve_data_u = celo_mainnet_lendingPool.functions.getUserReserveData('0x765DE816845861e75A25fCA122bb6898B8B1282a', celo_mainnet_web3.toChecksumAddress('0xFf447b6b29Cc2000afB7125c560E18F4DC109993')).call()
@@ -519,7 +520,7 @@ def main():
     # print((total_in_eth*0.8)/(total_in_eth))
     # user_reserve_data_e = celo_mainnet_lendingPool.functions.getUserReserveData('0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73', celo_mainnet_web3.toChecksumAddress('0xFf447b6b29Cc2000afB7125c560E18F4DC109993')).call()
     # print(user_reserve_data_e[0])
-    # user_activities = get_user_activity(celo_mainnet_latest_block-1000, celo_mainnet_latest_block, False)
+    # user_activities = get_user_activity(3410001, 6997440)
     
     # user_data = celo_mainnet_lendingPool.functions.getUserAccountData(celo_mainnet_web3.toChecksumAddress('0x851b85aA13193fD3A2987662eeC5dF7e89F25912')).call(block_identifier=celo_mainnet_latest_block)
     # call_api.dump_user_account_data('0x851b85aA13193fD3A2987662eeC5dF7e89F25912', user_data["TotalLiquidityETH"], user_data["TotalCollateralETH"], user_data["TotalBorrowsETH"], user_data["TotalFeesETH"], user_data["AvailableBorrowsETH"], user_data["CurrentLiquidationThreshold"], user_data["LoanToValuePercentage"], user_data["HealthFactor"], user_data["blockNumber"])
