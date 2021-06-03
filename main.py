@@ -501,13 +501,13 @@ def main():
     # store_addresses()    
     # print(unique_addresses)
     # print(len(unique_addresses))
-    
+    pass
     # bootstrap()
     # latest_block = get_latest_block_from_db()
-    current_block = 7021476
-    while True:
-        update(current_block)
-        current_block+=1
+    # current_block = 7021476
+    # while True:
+    #     update(current_block)
+    #     current_block+=1
     # user_reserve_data_c = celo_mainnet_lendingPool.functions.getUserReserveData('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', celo_mainnet_web3.toChecksumAddress('0xFf447b6b29Cc2000afB7125c560E18F4DC109993')).call(block_identifier=6936112)
     # print(user_reserve_data_c[0])
     # user_reserve_data_u = celo_mainnet_lendingPool.functions.getUserReserveData('0x765DE816845861e75A25fCA122bb6898B8B1282a', celo_mainnet_web3.toChecksumAddress('0xFf447b6b29Cc2000afB7125c560E18F4DC109993')).call()
