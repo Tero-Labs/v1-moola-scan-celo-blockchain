@@ -93,7 +93,11 @@ def get_coins():
     return coins
 
 def get_lending_pool_reserve_config_data(reserve_address, block_number):
-    config_data = celo_mainnet_lendingPool.functions.getReserveConfigurationData(reserve_address).call(block_identifier=block_number)
+    try: 
+        config_data = celo_mainnet_lendingPool.functions.getReserveConfigurationData(reserve_address).call(block_identifier=block_number)
+    except:
+        config_data = lendingPool_contract.functions.getReserveConfigurationData(reserve_address).call(block_identifier=block_number)
+      
     parsed_data = {
         "LoanToValuePercentage": config_data[0],
         "LiquidationThreshold": config_data[1],
@@ -108,7 +112,11 @@ def get_lending_pool_reserve_config_data(reserve_address, block_number):
     return parsed_data
 
 def get_lending_pool_reserve_data(reserve_address, block_number):
-    data = celo_mainnet_lendingPool.functions.getReserveData(reserve_address).call(block_identifier=block_number)
+    lendingPool_contract
+    try:
+        data = celo_mainnet_lendingPool.functions.getReserveData(reserve_address).call(block_identifier=block_number)
+    except:
+        data = lendingPool_contract.functions.getReserveData(reserve_address).call(block_identifier=block_number)
     parsed_data = {
             "TotalLiquidity": getInEther(data[0]),
             "AvailableLiquidity": getInEther(data[1]),
@@ -151,7 +159,7 @@ def get_user_account_data(unique_addresses, block_number):
             print(e)
             print("Exception for address: " + str(address))
             try:
-                user_account_data = celo_mainnet_lendingPool.functions.getUserAccountData(celo_mainnet_web3.toChecksumAddress(address)).call    (block_identifier=block_number)
+                user_account_data = lendingPool_contract.functions.getUserAccountData(celo_mainnet_web3.toChecksumAddress(address)).call    (block_identifier=block_number)
             except Exception as e:
                 print(e)
                 print("Exception for address: " + str(address))
@@ -186,7 +194,7 @@ def get_user_reserve_data(unique_addresses, block_number):
                 print(e)
                 print("Exception for address: " + str(address))
                 try:
-                    user_reserve_data = celo_mainnet_lendingPool.functions.getUserReserveData(coin['reserve_address'], celo_mainnet_web3.toChecksumAddress(address)).call(block_identifier=block_number)
+                    user_reserve_data = lendingPool_contract.functions.getUserReserveData(coin['reserve_address'], celo_mainnet_web3.toChecksumAddress(address)).call(block_identifier=block_number)
                 except Exception as e:
                     print(e)
                     print("Exception for address: " + str(address))
@@ -306,8 +314,8 @@ def call_apis_for_exchange_rate(block_number):
 def bootstrap():
     # from_block, to_block, number_of_calls = 3410001, celo_mainnet_latest_block, 0   
     # from_block, to_block, number_of_calls = 3410001, 6876412, 0  
-    # Last updated: 6876412, 6994224 -> 6994225, 6997440 -> 6997442 -> 7015737
-    from_block, to_block = 7021476, 7022114
+    # Last updated: 6876412, 6994224 -> 6994225, 6997440 -> 6997442 -> 7015737 -> 7022115 -> 7040955
+    from_block, to_block = 7022131, 7040955
     # celo_mainnet_latest_block = get_latest_block(helper_w3)
     unique_addresses = get_addresses(from_block, to_block)
     print("Number of unique addresses: " +  str(len(unique_addresses)))
@@ -509,7 +517,7 @@ def main():
     # pass
     # bootstrap()
     # latest_block = get_latest_block_from_db()
-    current_block = 7022115
+    current_block = 7040956
     while True:
         update(current_block)
         current_block+=1
