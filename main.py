@@ -358,7 +358,15 @@ def call_all_apis_for_reserve_and_user_data(from_block, to_block, unique_address
     call_api.dump_latest_scanned_block_number(to_block)
    
 def get_latest_block_from_db():
-    return 6997441
+    latest_block = "err"
+    try_number = 0
+    while latest_block == "err":
+        latest_block = call_api.getLastestBlock()
+        try_number+=1
+        if try_number > 1000:
+            raise Exception("Can not retrive the lastest block")
+    return latest_block  
+
 
 def update(latest_block):    
     from_block, to_block = latest_block, latest_block 
@@ -514,10 +522,12 @@ def main():
     # store_addresses()    
     # print(unique_addresses)
     # print(len(unique_addresses))
-    # pass
+    pass
     # bootstrap()
-    # latest_block = get_latest_block_from_db()
-    current_block = 7040956
+
+    current_block = get_latest_block_from_db()+1
+    print(current_block)
+    # current_block = 7040956
     while True:
         update(current_block)
         current_block+=1

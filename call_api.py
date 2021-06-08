@@ -4,6 +4,7 @@ import asyncio
 from urllib.request import urlretrieve
 from urllib.parse import urlencode
 from aiohttp import ClientSession
+import requests
 
 
 URL = "http://moola-downstream-api.herokuapp.com/"
@@ -19,6 +20,27 @@ async def fetch(url, params, method):
             # else:
             #     response.raise_for_status()
             return resp
+
+def getLastestBlock():
+    try:
+        response = ''
+        params = {"agent_id": 0}
+        response = requests.get(
+                "https://moola-downstream-api.herokuapp.com/get/agent_last_block",
+                params = params    
+        ) 
+        res = response.json()
+        print(res)
+        if (res["status"] == "OK"):
+            print("The request was a success!")
+            return int(res["block_number"])
+        else:
+            return "err"
+    # response.raise_for_status()
+    # Additional code will only run if the request is successful
+    except requests.exceptions.HTTPError as error:
+        print(error)
+        return "err"
 
 def dump_data(api_url, params, method):
     asyncio.run(fetch(URL+api_url, params, method))
