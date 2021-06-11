@@ -87,17 +87,17 @@ def dump_reserve_data(CoinType, TotalLiquidity, AvailableLiquidity, TotalBorrows
 
 def dump_user_addresses(addresses, from_block, to_block):
     for address in addresses:
-        dump_data('set/insert/db_celo_mainnet/tbl_user', {'address': address[2:], 'block_from': from_block, 'block_to': to_block, 'agent_id':0}, 'GET')
+        dump_data('set/insert/db_celo_mainnet/tbl_user', {'address': address[2:].lower(), 'block_from': from_block, 'block_to': to_block, 'agent_id':0}, 'GET')
 
 def dump_user_account_data(address, TotalLiquidityETH, TotalCollateralETH, TotalBorrowsETH, TotalFeesETH, AvailableBorrowsETH, CurrentLiquidationThreshold, LoanToValuePercentage, HealthFactor, block_number):
-    dump_data('set/insert/db_celo_mainnet/tbl_user_account', {'address': address[2:], 'total_liquidity_eth': TotalLiquidityETH, 'total_collateral_eth': TotalCollateralETH, 'total_borrows_eth': TotalBorrowsETH, 'total_fees_eth': TotalFeesETH, 'available_borrows_eth': AvailableBorrowsETH, 'current_liquidation_threshold': CurrentLiquidationThreshold, 'ltv': LoanToValuePercentage, 'health_factor': HealthFactor, 'block_number': block_number, "block_number__Type": "int",'agent_id':0}, 'GET')
+    dump_data('set/insert/db_celo_mainnet/tbl_user_account', {'address': address[2:].lower(), 'total_liquidity_eth': TotalLiquidityETH, 'total_collateral_eth': TotalCollateralETH, 'total_borrows_eth': TotalBorrowsETH, 'total_fees_eth': TotalFeesETH, 'available_borrows_eth': AvailableBorrowsETH, 'current_liquidation_threshold': CurrentLiquidationThreshold, 'ltv': LoanToValuePercentage, 'health_factor': HealthFactor, 'block_number': block_number, "block_number__Type": "int",'agent_id':0}, 'GET')
 
 def dump_user_reserve_data(coinType, address, Deposited, Borrowed, Debt, RateMode, BorrowRate, LiquidityRate, OriginationFee, BorrowIndex, LastUpdate, IsCollateral, block_number):
-    dump_data('set/insert/db_celo_mainnet/tbl_user_reserve', {'coin_name': coin_dict[coinType], 'address': address[2:], 'deposited': Deposited, 'borrowed': Borrowed, 'debt': Debt, 'rate_mode': RateMode, 'borrow_rate': BorrowRate, 'liquidity_rate': LiquidityRate, 'origination_fee': OriginationFee, 'borrow_index': BorrowIndex, 'is_collateral': IsCollateral, 'is_collateral__Type': 'bool', 'agent_id':0, 'last_update': LastUpdate, 'last_update__Type': 'datetime', 'block_number': block_number, "block_number__Type": "int"}, 'GET')
+    dump_data('set/insert/db_celo_mainnet/tbl_user_reserve', {'coin_name': coin_dict[coinType], 'address': address[2:].lower(), 'deposited': Deposited, 'borrowed': Borrowed, 'debt': Debt, 'rate_mode': RateMode, 'borrow_rate': BorrowRate, 'liquidity_rate': LiquidityRate, 'origination_fee': OriginationFee, 'borrow_index': BorrowIndex, 'is_collateral': IsCollateral, 'is_collateral__Type': 'bool', 'agent_id':0, 'last_update': LastUpdate, 'last_update__Type': 'datetime', 'block_number': block_number, "block_number__Type": "int"}, 'GET')
 # , 'last_update': LastUpdate,  'last_update__Type': 'datetime' __Type': 'bool', 
 
 def dump_user_activity_data(address, coinType, activityType, amount, amountOfDebtRepaid, liquidationPrice, tx_hash, timestamp, block_number):
-    dump_data('set/insert/db_celo_mainnet/tbl_user_activity', {'address': address[2:], 'coin_name': coin_dict[coinType], 'activity_type': activityType, 'amount': amount, 'amount_of_debt_repaid': amountOfDebtRepaid , 'liquidation_price': liquidationPrice, 'tx_hash':tx_hash, 'block_number': block_number, "block_number__Type": "int", 'tx_timestamp': timestamp,  "tx_timestamp__Type": "datetime",  'agent_id':0}, 'GET')
+    dump_data('set/insert/db_celo_mainnet/tbl_user_activity', {'address': address[2:].lower(), 'coin_name': coin_dict[coinType], 'activity_type': activityType, 'amount': amount, 'amount_of_debt_repaid': amountOfDebtRepaid , 'liquidation_price': liquidationPrice, 'tx_hash':tx_hash, 'block_number': block_number, "block_number__Type": "int", 'tx_timestamp': timestamp,  "tx_timestamp__Type": "datetime",  'agent_id':0}, 'GET')
 
 def dump_latest_scanned_block_number(blockNumber):
     dump_data('set/insert/db_celo_mainnet/tbl_block_number', {'block_number': blockNumber, 'agent_id':0}, 'GET')
