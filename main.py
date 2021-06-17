@@ -523,8 +523,10 @@ def get_liquidation_price(block_number, user_pub_key):
         total_in_debt = getInEther(user_account_data[2])
     except Exception as e:
         print("Error:  " + str(e))
+        return (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+
     if total_in_eth == 0.0 or  total_in_debt == 0.0:
-        return 0.0
+        return (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
     
     celo_usd, cusd_usd, ceuro_usd = get_exchange_rate_in_usd("celo", coins_reserve_address["celo"]), get_exchange_rate_in_usd("cusd", coins_reserve_address["cusd"]),get_exchange_rate_in_usd("ceuro", coins_reserve_address["ceuro"])
             
