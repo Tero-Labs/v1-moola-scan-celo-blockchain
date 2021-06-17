@@ -49,7 +49,7 @@ def getLastestBlock():
 
 def dump_data(api_url, params, method):
     asyncio.run(fetch(URL+api_url, params, method))
-    # print(URL+api_url+"?"+urlencode(params))
+    print(URL+api_url+"?"+urlencode(params))
 #     # time.sleep(1)
 #     # print(URL+api_url+"?"+urlencode(params))
 #     # print("", end="")
