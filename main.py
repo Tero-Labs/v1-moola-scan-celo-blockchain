@@ -386,9 +386,11 @@ def update(latest_block):
     else:
         call_api.dump_latest_scanned_block_number(to_block)
 
+celo_to_usd = cg.get_price(ids='celo', vs_currencies='usd')['celo']['usd']
+
 def get_exchange_rate_in_usd(coin_name, coin_address):
     price_in_celo = (price_oracle.functions.getAssetPrice(coin_address).call()/ether)
-    return price_in_celo*cg.get_price(ids='celo', vs_currencies='usd')['celo']['usd']
+    return price_in_celo*celo_to_usd
 
 def get_exchange_rate(coin):
     celo_in_usd = cg.get_price(ids='celo', vs_currencies='usd')['celo']['usd']
