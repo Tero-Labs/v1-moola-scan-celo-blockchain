@@ -49,7 +49,9 @@ celo_mainnet_kit = Kit('https://forno.celo.org')
 celo_mainnet_web3 = celo_mainnet_kit.w3
 celo_mainnet_eth = celo_mainnet_web3.eth        
 celo_mainnet_address_provider = celo_mainnet_eth.contract(address='0x7AAaD5a5fa74Aec83b74C2a098FBC86E17Ce4aEA', abi=Lending_Pool_Addresses_Provider) 
+
 price_oracle_address = celo_mainnet_address_provider.functions.getPriceOracle().call()
+
 celo_mainnet_address = celo_mainnet_address_provider.functions.getLendingPool().call() 
 # print(celo_mainnet_address)
 # print(price_oracle_address) 0x568547688121AA69bDEB8aEB662C321c5D7B98D0
@@ -553,12 +555,12 @@ def main():
     # store_addresses()    
     # print(unique_addresses)
     # print(len(unique_addresses))
-    # pass
-    from_block, to_block = 3410001, celo_mainnet_latest_block
-    # from_block, to_block = celo_mainnet_latest_block-10000, celo_mainnet_latest_block
-    user_activities = get_user_activity(from_block, to_block)  
-    call_apis_for_useractivity_data(user_activities)
-    print(celo_mainnet_latest_block)
+    pass
+    # from_block, to_block = 3410001, celo_mainnet_latest_block
+    # # from_block, to_block = celo_mainnet_latest_block-10000, celo_mainnet_latest_block
+    # user_activities = get_user_activity(from_block, to_block)  
+    # call_apis_for_useractivity_data(user_activities)
+    # print(celo_mainnet_latest_block)
     # bootstrap()
 
     # current_block = get_latest_block_from_db()+1
