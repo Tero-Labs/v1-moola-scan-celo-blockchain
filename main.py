@@ -545,6 +545,7 @@ def get_liquidation_price(block_number, user_pub_key):
     return (Liquidation_price_celo_in_celo, Liquidation_price_celo_in_cusd, Liquidation_price_celo_in_ceuro, Liquidation_price_cusd_in_celo, Liquidation_price_cusd_in_ceuro, Liquidation_price_ceuro_in_celo, Liquidation_price_ceuro_in_cusd)
 
 def main():
+    # call_api.dump_latest_scanned_block_number(7274594)
     # print(get_block_info(6839625))
     # event_filter = celo_mainnet_eth.filter({"address": celo_mainnet_lendingPool.address, 'fromBlock':celo_mainnet_web3.toHex(6839625), 'toBlock': celo_mainnet_web3.toHex(6839625)})
     # log = celo_mainnet_eth.getFilterLogs(event_filter.filter_id)
@@ -556,19 +557,19 @@ def main():
     # print(unique_addresses)
     # print(len(unique_addresses))
     # pass
-    from_block, to_block = 7273781, celo_mainnet_latest_block
-    # from_block, to_block = celo_mainnet_latest_block-10000, celo_mainnet_latest_block
-    user_activities = get_user_activity(from_block, to_block)  
-    call_apis_for_useractivity_data(user_activities)
-    print(celo_mainnet_latest_block)
+    # from_block, to_block = 7273781, celo_mainnet_latest_block
+    # # from_block, to_block = celo_mainnet_latest_block-10000, celo_mainnet_latest_block
+    # user_activities = get_user_activity(from_block, to_block)  
+    # call_apis_for_useractivity_data(user_activities)
+    # print(celo_mainnet_latest_block)
     # bootstrap()
 
-    # current_block = get_latest_block_from_db()+1
-    # print(current_block)
-    # # current_block = 7040956
-    # while True:
-    #     update(current_block)
-    #     current_block+=1
+    current_block = get_latest_block_from_db()+1
+    print(current_block)
+    # current_block = 7040956
+    while True:
+        update(current_block)
+        current_block+=1
 
 
     # user_reserve_data_c = celo_mainnet_lendingPool.functions.getUserReserveData('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', celo_mainnet_web3.toChecksumAddress('0xFf447b6b29Cc2000afB7125c560E18F4DC109993')).call(block_identifier=6936112)
