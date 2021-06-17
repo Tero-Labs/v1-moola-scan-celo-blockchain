@@ -303,7 +303,7 @@ def cal_apis_for_user_reserve_data(all_user_reserve_data):
 
 def call_apis_for_useractivity_data(user_activities):
     for user_activity in user_activities:
-        call_api.dump_user_activity_data(user_activity['address'], user_activity['coinType'], user_activity['activityType'], user_activity['amount'], user_activity['amountOfDebtRepaid'], user_activity['liquidation_price_same_currency'], user_activity['Liquidation_price_celo_in_cusd'], user_activity['Liquidation_price_celo_in_ceuro'], user_activity['Liquidation_price_cusd_in_celo'], user_activity['Liquidation_price_cusd_in_ceuro'], user_activity['Liquidation_price_ceuro_in_celo'], user_activity['Liquidation_price_ceuro_in_cusd'], user_activity['tx_hash'], user_activity['timestamp'], user_activity['block_number'])
+        call_api.dump_user_activity_data(user_activity['address'], user_activity['coinType'], user_activity['activityType'], user_activity['amount'], user_activity['amountOfDebtRepaid'], user_activity['Liquidation_price_same_currency'], user_activity['Liquidation_price_celo_in_cusd'], user_activity['Liquidation_price_celo_in_ceuro'], user_activity['Liquidation_price_cusd_in_celo'], user_activity['Liquidation_price_cusd_in_ceuro'], user_activity['Liquidation_price_ceuro_in_celo'], user_activity['Liquidation_price_ceuro_in_cusd'], user_activity['tx_hash'], user_activity['timestamp'], user_activity['block_number'])
 
 def call_apis_for_exchange_rate(block_number):
     coins = get_coins()
@@ -549,10 +549,12 @@ def main():
     # store_addresses()    
     # print(unique_addresses)
     # print(len(unique_addresses))
-    pass
-    # from_block, to_block = 3410001, celo_mainnet_latest_block
-    # user_activities = get_user_activity(from_block, to_block)  
-    # call_apis_for_useractivity_data(user_activities)
+    # pass
+    from_block, to_block = 3410001, celo_mainnet_latest_block
+    # from_block, to_block = celo_mainnet_latest_block-10000, celo_mainnet_latest_block
+    user_activities = get_user_activity(from_block, to_block)  
+    call_apis_for_useractivity_data(user_activities)
+    print(celo_mainnet_latest_block)
     # bootstrap()
 
     # current_block = get_latest_block_from_db()+1
