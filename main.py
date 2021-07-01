@@ -521,18 +521,19 @@ def get_liquidation_price(block_number, user_pub_key):
     #     print("ceuro:  " + str(e))
     try:
         user_account_data = lendingPool_contract.functions.getUserAccountData(celo_mainnet_web3.toChecksumAddress(user_pub_key)).call(block_identifier=block_number)
-        total_in_eth = getInEther(user_account_data[0])
+        total_in_eth = getInEther(user_account_data[1])
         total_in_debt = getInEther(user_account_data[2])
+        total_fee =  getInEther(user_account_data[3])
     except Exception as e:
         print("Error:  " + str(e))
         return (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 
-    if total_in_eth == 0.0 or  total_in_debt == 0.0:
+    if total_in_eth == 0.0 or total_in_debt == 0.0:
         return (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
     
     celo_usd, cusd_usd, ceuro_usd = get_exchange_rate_in_usd("celo", coins_reserve_address["celo"]), get_exchange_rate_in_usd("cusd", coins_reserve_address["cusd"]),get_exchange_rate_in_usd("ceuro", coins_reserve_address["ceuro"])
             
-    Liquidation_price_celo_in_celo = total_in_debt/(0.8*total_in_eth)
+    Liquidation_price_celo_in_celo = (total_in_debt+total_fee)/(0.8*total_in_eth)
     Liquidation_price_celo_in_cusd = Liquidation_price_celo_in_celo * celo_usd / cusd_usd
     Liquidation_price_celo_in_ceuro = Liquidation_price_celo_in_celo * celo_usd / ceuro_usd
     Liquidation_price_cusd_in_celo = Liquidation_price_celo_in_celo * cusd_usd / celo_usd
