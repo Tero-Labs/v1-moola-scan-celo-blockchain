@@ -569,8 +569,21 @@ def get_liquidation_price(block_number, user_pub_key):
 # , Liquidation_price_celo_in_cusd, Liquidation_price_celo_in_ceuro, Liquidation_price_cusd_in_celo, Liquidation_price_cusd_in_ceuro, Liquidation_price_ceuro_in_celo, Liquidation_price_ceuro_in_cusd
     return Liquidation_price_celo_in_celo
 
-def recover_data_for_remining(from_block):
-    pass
+def dump_current_users_data():
+    res = requests.get("https://moola-downstream-api.herokuapp.com/get/info/unique_address")
+    adresses = res.json()["data"]
+    print(adresses)
+    all_user_account_data = get_user_account_data(adresses, block_number)
+    all_user_reserve_data = get_user_reserve_data(adresses, block_number)
+    cal_apis_for_user_account_data(all_user_account_data)
+    cal_apis_for_user_reserve_data(all_user_reserve_data)
+
+def recover_data_for_remining(from_block, to_block):
+    unique_addresses = get_addresses(from_block, to_block)
+    all_user_account_data = get_user_account_data(unique_addresses, to_block)
+    all_user_reserve_data = get_user_reserve_data(unique_addresses, to_block)
+    cal_apis_for_user_account_data(all_user_account_data)
+    cal_apis_for_user_reserve_data(all_user_reserve_data)
 
 def main():
     # call_api.dump_latest_scanned_block_number(7274594)
@@ -586,13 +599,13 @@ def main():
     # print(len(unique_addresses))
     # user_account_data = lendingPool_contract.functions.getUserAccountData(celo_mainnet_web3.toChecksumAddress("0x5083043abfceadd736a97ce32a71ac7a1386e449")).call(block_identifier=6839625)
     # print(user_account_data)
-    pass
+    # pass
 
-    # from_block, to_block = 3410001, celo_mainnet_latest_block
-    # print(celo_mainnet_latest_block)
-    # # from_block, to_block = celo_mainnet_latest_block-1000, celo_mainnet_latest_block
-    # user_activities = get_user_activity(from_block, to_block)  
-    # call_apis_for_useractivity_data(user_activities)
+    from_block, to_block = 7567667, celo_mainnet_latest_block
+    print(celo_mainnet_latest_block)
+    # from_block, to_block = celo_mainnet_latest_block-1000, celo_mainnet_latest_block
+    user_activities = get_user_activity(from_block, to_block)  
+    call_apis_for_useractivity_data(user_activities)
     
     # print(celo_mainnet_latest_block)
     # print("Finished...")
