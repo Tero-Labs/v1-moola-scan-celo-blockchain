@@ -601,9 +601,9 @@ def main():
     # print(len(unique_addresses))
     # user_account_data = lendingPool_contract.functions.getUserAccountData(celo_mainnet_web3.toChecksumAddress("0x5083043abfceadd736a97ce32a71ac7a1386e449")).call(block_identifier=6839625)
     # print(user_account_data)
-    pass
+    # pass
     # recover_data_for_remining(7564043, 7568993)
-    dump_current_users_data(celo_mainnet_latest_block)
+    # dump_current_users_data(celo_mainnet_latest_block)
     # from_block, to_block = 7567667, celo_mainnet_latest_block
     # print(celo_mainnet_latest_block)
     # # from_block, to_block = celo_mainnet_latest_block-1000, celo_mainnet_latest_block
@@ -615,12 +615,12 @@ def main():
     # bootstrap()
 
     # print(get_user_account_data(["0x5083043abfceadd736a97ce32a71ac7a1386e449"], 7104903))
-    # current_block = get_latest_block_from_db()+1
-    # print(current_block)
-    # # current_block = 7040956
-    # while True:
-    #     update(current_block)
-    #     current_block+=1
+    current_block = get_latest_block_from_db()+1
+    print("current block: " + str(current_block))
+    # current_block = 7040956
+    while True:
+        update(current_block)
+        current_block+=1
 
 
     # user_reserve_data_c = celo_mainnet_lendingPool.functions.getUserReserveData('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', celo_mainnet_web3.toChecksumAddress('0xFf447b6b29Cc2000afB7125c560E18F4DC109993')).call(block_identifier=6936112)
