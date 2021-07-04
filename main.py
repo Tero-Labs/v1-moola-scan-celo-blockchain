@@ -569,7 +569,7 @@ def get_liquidation_price(block_number, user_pub_key):
 # , Liquidation_price_celo_in_cusd, Liquidation_price_celo_in_ceuro, Liquidation_price_cusd_in_celo, Liquidation_price_cusd_in_ceuro, Liquidation_price_ceuro_in_celo, Liquidation_price_ceuro_in_cusd
     return Liquidation_price_celo_in_celo
 
-def dump_user_data():
+def recover_data_for_remining(from_block):
     pass
 
 def main():
@@ -584,15 +584,16 @@ def main():
     # store_addresses()    
     # print(unique_addresses)
     # print(len(unique_addresses))
-    # pass
-    from_block, to_block = 3410001, celo_mainnet_latest_block
-    print(celo_mainnet_latest_block)
-    # from_block, to_block = celo_mainnet_latest_block-1000, celo_mainnet_latest_block
-    user_activities = get_user_activity(from_block, to_block)  
-    call_apis_for_useractivity_data(user_activities)
+    pass
+
+    # from_block, to_block = 3410001, celo_mainnet_latest_block
+    # print(celo_mainnet_latest_block)
+    # # from_block, to_block = celo_mainnet_latest_block-1000, celo_mainnet_latest_block
+    # user_activities = get_user_activity(from_block, to_block)  
+    # call_apis_for_useractivity_data(user_activities)
     
-    print(celo_mainnet_latest_block)
-    print("Finished...")
+    # print(celo_mainnet_latest_block)
+    # print("Finished...")
     # bootstrap()
 
     # print(get_user_account_data(["0x5083043abfceadd736a97ce32a71ac7a1386e449"], 7104903))
