@@ -496,6 +496,7 @@ def get_user_activity(from_block, to_block):
                 else:
                     amount = e['args']['_amount']
                     health_factor = get_health_factor(e['args']['_user'], e["blockNumber"])
+                print(e['blockNumber'])
                 user_activities.append({
                     'activityType': events[event],
                     'address': e['args']['_user'], 
