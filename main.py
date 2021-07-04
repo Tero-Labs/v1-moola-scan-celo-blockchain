@@ -573,10 +573,10 @@ def dump_current_users_data():
     res = requests.get("https://moola-downstream-api.herokuapp.com/get/info/unique_address")
     adresses = res.json()["data"]
     print(adresses)
-    all_user_account_data = get_user_account_data(adresses, block_number)
-    all_user_reserve_data = get_user_reserve_data(adresses, block_number)
-    cal_apis_for_user_account_data(all_user_account_data)
-    cal_apis_for_user_reserve_data(all_user_reserve_data)
+    # all_user_account_data = get_user_account_data(adresses, block_number)
+    # all_user_reserve_data = get_user_reserve_data(adresses, block_number)
+    # cal_apis_for_user_account_data(all_user_account_data)
+    # cal_apis_for_user_reserve_data(all_user_reserve_data)
 
 def recover_data_for_remining(from_block, to_block):
     unique_addresses = get_addresses(from_block, to_block)
@@ -602,7 +602,8 @@ def main():
     # user_account_data = lendingPool_contract.functions.getUserAccountData(celo_mainnet_web3.toChecksumAddress("0x5083043abfceadd736a97ce32a71ac7a1386e449")).call(block_identifier=6839625)
     # print(user_account_data)
     pass
-    recover_data_for_remining(7564043, 7568993)
+    # recover_data_for_remining(7564043, 7568993)
+    # dump_current_users_data()
     # from_block, to_block = 7567667, celo_mainnet_latest_block
     # print(celo_mainnet_latest_block)
     # # from_block, to_block = celo_mainnet_latest_block-1000, celo_mainnet_latest_block
