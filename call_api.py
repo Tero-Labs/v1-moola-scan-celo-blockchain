@@ -49,7 +49,7 @@ def getLastestBlock():
 
 def dump_data(api_url, params, method):
     asyncio.run(fetch(URL+api_url, params, method))
-    print(URL+api_url+"?"+urlencode(params))
+    # print(URL+api_url+"?"+urlencode(params))
 #     # time.sleep(1)
 #     # print(URL+api_url+"?"+urlencode(params))
 #     # print("", end="")
@@ -100,8 +100,8 @@ def dump_user_reserve_data(coinType, address, Deposited, Borrowed, Debt, RateMod
 # def dump_user_activity_data(address, coinType, activityType, amount, amountOfDebtRepaid, liquidation_price_same_currency, liquidation_price_celo_in_cusd, liquidation_price_celo_in_ceuro, liquidation_price_cusd_in_celo, liquidation_price_cusd_in_ceuro, liquidation_price_ceuro_in_celo, liquidation_price_ceuro_in_cusd, tx_hash, timestamp, block_number):
 #     dump_data('set/insert/db_celo_mainnet/tbl_user_activity', {'address': address[2:].lower(), 'coin_name': coin_dict[coinType], 'activity_type': activityType, 'amount': amount, 'amount_of_debt_repaid': amountOfDebtRepaid , 'liquidation_price_base': liquidation_price_same_currency, "liquidation_price_celo_in_cusd": liquidation_price_celo_in_cusd, "liquidation_price_celo_in_ceuro": liquidation_price_celo_in_ceuro,"liquidation_price_cusd_in_celo": liquidation_price_cusd_in_celo,"liquidation_price_cusd_in_ceuro": liquidation_price_cusd_in_ceuro,"liquidation_price_ceuro_in_celo": liquidation_price_ceuro_in_celo,"liquidation_price_ceuro_in_cusd": liquidation_price_ceuro_in_cusd, 'tx_hash':tx_hash, 'block_number': block_number, "block_number__Type": "int", 'tx_timestamp': timestamp,  "tx_timestamp__Type": "datetime",  'agent_id':0}, 'GET')
 
-def dump_user_activity_data(address, coinType, activityType, amount, amountOfDebtRepaid, liquidation_price_same_currency, tx_hash, timestamp, block_number):
-    dump_data('set/insert/db_celo_mainnet/tbl_user_activity', {'address': address[2:].lower(), 'coin_name': coin_dict[coinType], 'activity_type': activityType, 'amount': amount, 'amount_of_debt_repaid': amountOfDebtRepaid , 'liquidation_price_base': liquidation_price_same_currency,'tx_hash':tx_hash, 'block_number': block_number, "block_number__Type": "int", 'tx_timestamp': timestamp,  "tx_timestamp__Type": "datetime",  'agent_id':0}, 'GET')
+def dump_user_activity_data(address, coinType, activityType, amount, amountOfDebtRepaid, healthFactor, liquidation_price_same_currency, tx_hash, timestamp, block_number):
+    dump_data('set/insert/db_celo_mainnet/tbl_user_activity', {'address': address[2:].lower(), 'coin_name': coin_dict[coinType], 'activity_type': activityType, 'amount': amount, 'amount_of_debt_repaid': amountOfDebtRepaid , 'health_factor': healthFactor, 'liquidation_price_base': liquidation_price_same_currency,'tx_hash':tx_hash, 'block_number': block_number, "block_number__Type": "int", 'tx_timestamp': timestamp,  "tx_timestamp__Type": "datetime",  'agent_id':0}, 'GET')
 
 def dump_latest_scanned_block_number(blockNumber):
     dump_data('set/insert/db_celo_mainnet/tbl_block_number', {'block_number': blockNumber, 'agent_id':0}, 'GET')
