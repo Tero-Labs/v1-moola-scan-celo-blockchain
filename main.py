@@ -305,7 +305,8 @@ def cal_apis_for_user_reserve_data(all_user_reserve_data):
 
 def call_apis_for_useractivity_data(user_activities):
     for user_activity in user_activities:
-        call_api.dump_user_activity_data(user_activity['address'], user_activity['coinType'], user_activity['activityType'], user_activity['amount'], user_activity['amountOfDebtRepaid'], user_activity['Liquidation_price_same_currency'], user_activity['Liquidation_price_celo_in_cusd'], user_activity['Liquidation_price_celo_in_ceuro'], user_activity['Liquidation_price_cusd_in_celo'], user_activity['Liquidation_price_cusd_in_ceuro'], user_activity['Liquidation_price_ceuro_in_celo'], user_activity['Liquidation_price_ceuro_in_cusd'], user_activity['tx_hash'], user_activity['timestamp'], user_activity['block_number'])
+        call_api.dump_user_activity_data(user_activity['address'], user_activity['coinType'], user_activity['activityType'], user_activity['amount'], user_activity['amountOfDebtRepaid'], user_activity['Liquidation_price_same_currency'], user_activity['tx_hash'], user_activity['timestamp'], user_activity['block_number'])
+        #  call_api.dump_user_activity_data(user_activity['address'], user_activity['coinType'], user_activity['activityType'], user_activity['amount'], user_activity['amountOfDebtRepaid'], user_activity['Liquidation_price_same_currency'], user_activity['Liquidation_price_celo_in_cusd'], user_activity['Liquidation_price_celo_in_ceuro'], user_activity['Liquidation_price_cusd_in_celo'], user_activity['Liquidation_price_cusd_in_ceuro'], user_activity['Liquidation_price_ceuro_in_celo'], user_activity['Liquidation_price_ceuro_in_cusd'], user_activity['tx_hash'], user_activity['timestamp'], user_activity['block_number'])
 
 def call_apis_for_exchange_rate(block_number):
     coins = get_coins()
@@ -340,11 +341,12 @@ def bootstrap():
     # print(all_user_account_data[0])
     cal_apis_for_user_reserve_data(all_user_reserve_data)
     # print(all_user_reserve_data[0])
-    user_activities = get_user_activity(from_block, to_block)
-    # print(user_activities[0])  
-    # number_of_calls += len(user_activities) 
-    call_apis_for_useractivity_data(user_activities)
-    print("Number of user activities:" + str(len(user_activities)))
+    
+    # user_activities = get_user_activity(from_block, to_block)
+    # # print(user_activities[0])  
+    # # number_of_calls += len(user_activities) 
+    # call_apis_for_useractivity_data(user_activities)
+    # print("Number of user activities:" + str(len(user_activities)))
     call_api.dump_latest_scanned_block_number(to_block)
     # print("Number of calls: " + str(number_of_calls))
 
@@ -461,15 +463,15 @@ def get_user_activity(from_block, to_block):
                 if event == 'LiquidationCall':
                     amount = e['args']['_liquidatedCollateralAmount']
                     amountOfDebtRepaid = e['args']['_purchaseAmount']
-                    Liquidation_price_same_currency, Liquidation_price_celo_in_cusd, Liquidation_price_celo_in_ceuro, Liquidation_price_cusd_in_celo, Liquidation_price_cusd_in_ceuro, Liquidation_price_ceuro_in_celo, Liquidation_price_ceuro_in_cusd  = get_liquidation_price(e["blockNumber"], e['args']['_user'])
+                    Liquidation_price_same_currency = get_liquidation_price(e["blockNumber"], e['args']['_user'])
                     # print("liquidation_price: " + str(liquidation_price))
                 elif event == 'Repay':
                     amount = e['args']['_amountMinusFees'] + e['args']['_fees']
-                    Liquidation_price_same_currency, Liquidation_price_celo_in_cusd, Liquidation_price_celo_in_ceuro, Liquidation_price_cusd_in_celo, Liquidation_price_cusd_in_ceuro, Liquidation_price_ceuro_in_celo, Liquidation_price_ceuro_in_cusd  = get_liquidation_price(e["blockNumber"], e['args']['_user'])
+                    Liquidation_price_same_currency = get_liquidation_price(e["blockNumber"], e['args']['_user'])
                     # print("liquidation_price: " + str(liquidation_price))
                 elif event == "Borrow":
                     amount = e['args']['_amount']
-                    Liquidation_price_same_currency, Liquidation_price_celo_in_cusd, Liquidation_price_celo_in_ceuro, Liquidation_price_cusd_in_celo, Liquidation_price_cusd_in_ceuro, Liquidation_price_ceuro_in_celo, Liquidation_price_ceuro_in_cusd  = get_liquidation_price(e["blockNumber"], e['args']['_user'])
+                    Liquidation_price_same_currency = get_liquidation_price(e["blockNumber"], e['args']['_user'])
                     # print("liquidation_price: " + str(liquidation_price))
                 else:
                     amount = e['args']['_amount']
@@ -479,15 +481,15 @@ def get_user_activity(from_block, to_block):
                     'address': e['args']['_user'], 
                     'timestamp': dt.fromtimestamp(e['args']['_timestamp']).strftime("%m-%d-%Y %H:%M:%S"),
                     'coinType': coins[e['args']['_reserve']],
-                    'amount': amount,
-                    'amountOfDebtRepaid': amountOfDebtRepaid,
+                    'amount': amount/ether,
+                    'amountOfDebtRepaid': amountOfDebtRepaid/ether,
                     'Liquidation_price_same_currency': Liquidation_price_same_currency,
-                    'Liquidation_price_celo_in_cusd': Liquidation_price_celo_in_cusd,
-                    'Liquidation_price_celo_in_ceuro': Liquidation_price_celo_in_ceuro,
-                    'Liquidation_price_cusd_in_celo': Liquidation_price_cusd_in_celo,
-                    'Liquidation_price_cusd_in_ceuro': Liquidation_price_cusd_in_ceuro,
-                    'Liquidation_price_ceuro_in_celo': Liquidation_price_ceuro_in_celo,
-                    'Liquidation_price_ceuro_in_cusd': Liquidation_price_ceuro_in_cusd,
+                    # 'Liquidation_price_celo_in_cusd': Liquidation_price_celo_in_cusd,
+                    # 'Liquidation_price_celo_in_ceuro': Liquidation_price_celo_in_ceuro,
+                    # 'Liquidation_price_cusd_in_celo': Liquidation_price_cusd_in_celo,
+                    # 'Liquidation_price_cusd_in_ceuro': Liquidation_price_cusd_in_ceuro,
+                    # 'Liquidation_price_ceuro_in_celo': Liquidation_price_ceuro_in_celo,
+                    # 'Liquidation_price_ceuro_in_cusd': Liquidation_price_ceuro_in_cusd,
                     'tx_hash': str(e['transactionHash'].hex())[2:],
                     "block_number": e['blockNumber']
                 })
@@ -505,7 +507,7 @@ coins_reserve_address = {
 }
 
 def get_liquidation_price(block_number, user_pub_key):
-    total_in_debt, total_in_eth = 0.0, 0.0
+    total_in_debt, total_in_eth, total_fee = 0.0, 0.0, 0.0
     print(block_number)
     # try:
     #     data_celo = lendingPool_contract.functions.getUserReserveData('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', w3.toChecksumAddress(user_pub_key)).call(block_identifier=block_number)[0]
@@ -526,24 +528,27 @@ def get_liquidation_price(block_number, user_pub_key):
         total_fee =  getInEther(user_account_data[3])
     except Exception as e:
         print("Error:  " + str(e))
-        return (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
-
-    if total_in_eth == 0.0 or total_in_debt == 0.0:
-        return (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+        return 0.0
     
-    celo_usd, cusd_usd, ceuro_usd = get_exchange_rate_in_usd("celo", coins_reserve_address["celo"]), get_exchange_rate_in_usd("cusd", coins_reserve_address["cusd"]),get_exchange_rate_in_usd("ceuro", coins_reserve_address["ceuro"])
+    if total_in_eth == 0.0 or total_in_debt == 0.0:
+        return 0.0
+    
+    # celo_usd, cusd_usd, ceuro_usd = get_exchange_rate_in_usd("celo", coins_reserve_address["celo"]), get_exchange_rate_in_usd("cusd", coins_reserve_address["cusd"]),get_exchange_rate_in_usd("ceuro", coins_reserve_address["ceuro"])
             
     Liquidation_price_celo_in_celo = (total_in_debt+total_fee)/(0.8*total_in_eth)
-    Liquidation_price_celo_in_cusd = Liquidation_price_celo_in_celo * celo_usd / cusd_usd
-    Liquidation_price_celo_in_ceuro = Liquidation_price_celo_in_celo * celo_usd / ceuro_usd
-    Liquidation_price_cusd_in_celo = Liquidation_price_celo_in_celo * cusd_usd / celo_usd
+    # Liquidation_price_celo_in_cusd = Liquidation_price_celo_in_celo * celo_usd / cusd_usd
+    # Liquidation_price_celo_in_ceuro = Liquidation_price_celo_in_celo * celo_usd / ceuro_usd
+    # Liquidation_price_cusd_in_celo = Liquidation_price_celo_in_celo * cusd_usd / celo_usd
     # Liquidation_price_cusd_in_cusd =
-    Liquidation_price_cusd_in_ceuro = Liquidation_price_celo_in_celo * cusd_usd / ceuro_usd
-    Liquidation_price_ceuro_in_celo = Liquidation_price_celo_in_celo * ceuro_usd / celo_usd
-    Liquidation_price_ceuro_in_cusd = Liquidation_price_celo_in_celo * ceuro_usd / cusd_usd
+    # Liquidation_price_cusd_in_ceuro = Liquidation_price_celo_in_celo * cusd_usd / ceuro_usd
+    # Liquidation_price_ceuro_in_celo = Liquidation_price_celo_in_celo * ceuro_usd / celo_usd
+    # Liquidation_price_ceuro_in_cusd = Liquidation_price_celo_in_celo * ceuro_usd / cusd_usd
     # Liquidation_price_ceuro_in_ceuro =
+# , Liquidation_price_celo_in_cusd, Liquidation_price_celo_in_ceuro, Liquidation_price_cusd_in_celo, Liquidation_price_cusd_in_ceuro, Liquidation_price_ceuro_in_celo, Liquidation_price_ceuro_in_cusd
+    return Liquidation_price_celo_in_celo
 
-    return (Liquidation_price_celo_in_celo, Liquidation_price_celo_in_cusd, Liquidation_price_celo_in_ceuro, Liquidation_price_cusd_in_celo, Liquidation_price_cusd_in_ceuro, Liquidation_price_ceuro_in_celo, Liquidation_price_ceuro_in_cusd)
+def dump_user_data():
+    pass
 
 def main():
     # call_api.dump_latest_scanned_block_number(7274594)
@@ -557,20 +562,22 @@ def main():
     # store_addresses()    
     # print(unique_addresses)
     # print(len(unique_addresses))
-    # pass
-    # from_block, to_block = 7273781, celo_mainnet_latest_block
-    # # from_block, to_block = celo_mainnet_latest_block-10000, celo_mainnet_latest_block
+    pass
+    # from_block, to_block = 3410001, celo_mainnet_latest_block
+    # print(celo_mainnet_latest_block)
+    # from_block, to_block = celo_mainnet_latest_block-10000, celo_mainnet_latest_block
     # user_activities = get_user_activity(from_block, to_block)  
     # call_apis_for_useractivity_data(user_activities)
     # print(celo_mainnet_latest_block)
+    # print(celo_mainnet_latest_block)
     # bootstrap()
-
-    current_block = get_latest_block_from_db()+1
-    print(current_block)
-    # current_block = 7040956
-    while True:
-        update(current_block)
-        current_block+=1
+    # print(get_user_account_data(["0x5083043abfceadd736a97ce32a71ac7a1386e449"], 7104903))
+    # current_block = get_latest_block_from_db()+1
+    # print(current_block)
+    # # current_block = 7040956
+    # while True:
+    #     update(current_block)
+    #     current_block+=1
 
 
     # user_reserve_data_c = celo_mainnet_lendingPool.functions.getUserReserveData('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', celo_mainnet_web3.toChecksumAddress('0xFf447b6b29Cc2000afB7125c560E18F4DC109993')).call(block_identifier=6936112)
@@ -585,12 +592,11 @@ def main():
     # print((total_in_eth*0.8)/(total_in_eth))
     # user_reserve_data_e = celo_mainnet_lendingPool.functions.getUserReserveData('0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73', celo_mainnet_web3.toChecksumAddress('0xFf447b6b29Cc2000afB7125c560E18F4DC109993')).call()
     # print(user_reserve_data_e[0])
-    # user_activities = get_user_activity(3410001, 6997440)
+  
     
     # user_data = celo_mainnet_lendingPool.functions.getUserAccountData(celo_mainnet_web3.toChecksumAddress('0x851b85aA13193fD3A2987662eeC5dF7e89F25912')).call(block_identifier=celo_mainnet_latest_block)
     # call_api.dump_user_account_data('0x851b85aA13193fD3A2987662eeC5dF7e89F25912', user_data["TotalLiquidityETH"], user_data["TotalCollateralETH"], user_data["TotalBorrowsETH"], user_data["TotalFeesETH"], user_data["AvailableBorrowsETH"], user_data["CurrentLiquidationThreshold"], user_data["LoanToValuePercentage"], user_data["HealthFactor"], user_data["blockNumber"])
     # user_activities = get_user_activity(6842227, 6842227, False)
-    # call_apis_for_useractivity_data(user_activities)
     # print(celo_mainnet_lendingPool.functions.getReserves().call())
     # block_info = get_block_info(celo_mainnet_latest_block)
     # print(celo_mainnet_latest_block)
