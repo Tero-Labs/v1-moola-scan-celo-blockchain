@@ -446,7 +446,7 @@ def get_health_factor(user_pub_key, block):
         total_in_debt = getInEther(user_account_data[2])
         total_fee =  getInEther(user_account_data[3])
     except Exception as e:
-        print("Error:  " + str(e))
+        print("Error getting health factor:  " + str(e))
         return 0.0
     
     if total_in_eth != 0.0 and total_in_debt+total_fee != 0.0:
@@ -496,7 +496,6 @@ def get_user_activity(from_block, to_block):
                 else:
                     amount = e['args']['_amount']
                     health_factor = get_health_factor(e['args']['_user'], e["blockNumber"])
-        
                 user_activities.append({
                     'activityType': events[event],
                     'address': e['args']['_user'], 
@@ -530,7 +529,7 @@ coins_reserve_address = {
 
 def get_liquidation_price(block_number, user_pub_key):
     total_in_debt, total_in_eth, total_fee = 0.0, 0.0, 0.0
-    print(block_number)
+    # print(block_number)
     # try:
     #     data_celo = lendingPool_contract.functions.getUserReserveData('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', w3.toChecksumAddress(user_pub_key)).call(block_identifier=block_number)[0]
     # except Exception as e:
@@ -549,7 +548,7 @@ def get_liquidation_price(block_number, user_pub_key):
         total_in_debt = getInEther(user_account_data[2])
         total_fee =  getInEther(user_account_data[3])
     except Exception as e:
-        print("Error:  " + str(e))
+        print("Error getting  liquidation price " + str(e))
         return 0.0
     
     if total_in_eth == 0.0 or total_in_debt == 0.0:
