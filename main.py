@@ -587,7 +587,7 @@ def main():
     # pass
     from_block, to_block = 3410001, celo_mainnet_latest_block
     print(celo_mainnet_latest_block)
-    # from_block, to_block = celo_mainnet_latest_block-100000, celo_mainnet_latest_block
+    # from_block, to_block = celo_mainnet_latest_block-1000, celo_mainnet_latest_block
     user_activities = get_user_activity(from_block, to_block)  
     call_apis_for_useractivity_data(user_activities)
     
