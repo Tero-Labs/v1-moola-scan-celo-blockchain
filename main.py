@@ -61,7 +61,7 @@ print(price_oracle.functions.getAssetPrice("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeee
 helper_w3 = Kit('https://forno.celo.org').w3
 celo_mainnet_latest_block = get_latest_block(helper_w3)
 
-w3 = Web3(Web3.HTTPProvider('https://celo-mainnet--rpc.datahub.figment.io/apikey/e05da80c6de7b2f8af3bae0015639f08/'))
+w3 = Web3(Web3.HTTPProvider('https://celo-mainnet--rpc.datahub.figment.io/apikey/f75e7810e4dd99627b3defedada074a4/'))
 lendingPool_contract = w3.eth.contract(address=celo_mainnet_address, abi= Lending_Pool)
 print(celo_mainnet_address)
 print("Latest scanned block number " + str(celo_mainnet_latest_block))
@@ -476,7 +476,7 @@ def get_user_activity(from_block, to_block):
                 amount =''
                 amountOfDebtRepaid = 0
                 liquidation_price = 0
-                health_factor = 0
+                health_factor = 0.0
                 if event == 'LiquidationCall':
                     amount = e['args']['_liquidatedCollateralAmount']
                     amountOfDebtRepaid = e['args']['_purchaseAmount']
@@ -487,15 +487,15 @@ def get_user_activity(from_block, to_block):
                     amount = e['args']['_amountMinusFees'] + e['args']['_fees']
                     Liquidation_price_same_currency = get_liquidation_price(e["blockNumber"], e['args']['_user'])
                     # print("liquidation_price: " + str(liquidation_price))
-                    health_factor = get_health_factor(e['args']['_user'], e["blockNumber"])
+                    # health_factor = get_health_factor(e['args']['_user'], e["blockNumber"])
                 elif event == "Borrow":
                     amount = e['args']['_amount']
                     Liquidation_price_same_currency = get_liquidation_price(e["blockNumber"], e['args']['_user'])
                     # print("liquidation_price: " + str(liquidation_price))
-                    health_factor = get_health_factor(e['args']['_user'], e["blockNumber"])
+                    # health_factor = get_health_factor(e['args']['_user'], e["blockNumber"])
                 else:
                     amount = e['args']['_amount']
-                    health_factor = get_health_factor(e['args']['_user'], e["blockNumber"])
+                    # health_factor = get_health_factor(e['args']['_user'], e["blockNumber"])
                 print(e['blockNumber'])
                 user_activities.append({
                     'activityType': events[event],
@@ -584,13 +584,15 @@ def main():
     # store_addresses()    
     # print(unique_addresses)
     # print(len(unique_addresses))
-    pass
+    # user_account_data = lendingPool_contract.functions.getUserAccountData(celo_mainnet_web3.toChecksumAddress("0x5083043abfceadd736a97ce32a71ac7a1386e449")).call(block_identifier=6839625)
+    # print(user_account_data)
+    # pass
 
-    # from_block, to_block = 3410001, celo_mainnet_latest_block
-    # print(celo_mainnet_latest_block)
-    # # from_block, to_block = celo_mainnet_latest_block-1000, celo_mainnet_latest_block
-    # user_activities = get_user_activity(from_block, to_block)  
-    # call_apis_for_useractivity_data(user_activities)
+    from_block, to_block = 3410001, celo_mainnet_latest_block
+    print(celo_mainnet_latest_block)
+    # from_block, to_block = celo_mainnet_latest_block-1000, celo_mainnet_latest_block
+    user_activities = get_user_activity(from_block, to_block)  
+    call_apis_for_useractivity_data(user_activities)
     
     # print(celo_mainnet_latest_block)
     # print("Finished...")
