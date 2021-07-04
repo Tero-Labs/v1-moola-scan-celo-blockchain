@@ -586,13 +586,13 @@ def main():
     # print(len(unique_addresses))
     # user_account_data = lendingPool_contract.functions.getUserAccountData(celo_mainnet_web3.toChecksumAddress("0x5083043abfceadd736a97ce32a71ac7a1386e449")).call(block_identifier=6839625)
     # print(user_account_data)
-    # pass
+    pass
 
-    from_block, to_block = 3410001, celo_mainnet_latest_block
-    print(celo_mainnet_latest_block)
-    # from_block, to_block = celo_mainnet_latest_block-1000, celo_mainnet_latest_block
-    user_activities = get_user_activity(from_block, to_block)  
-    call_apis_for_useractivity_data(user_activities)
+    # from_block, to_block = 3410001, celo_mainnet_latest_block
+    # print(celo_mainnet_latest_block)
+    # # from_block, to_block = celo_mainnet_latest_block-1000, celo_mainnet_latest_block
+    # user_activities = get_user_activity(from_block, to_block)  
+    # call_apis_for_useractivity_data(user_activities)
     
     # print(celo_mainnet_latest_block)
     # print("Finished...")
