@@ -603,7 +603,7 @@ def main():
     # print(user_account_data)
     pass
     # recover_data_for_remining(7564043, 7568993)
-    dump_current_users_data(7568993)
+    dump_current_users_data(celo_mainnet_latest_block)
     # from_block, to_block = 7567667, celo_mainnet_latest_block
     # print(celo_mainnet_latest_block)
     # # from_block, to_block = celo_mainnet_latest_block-1000, celo_mainnet_latest_block
