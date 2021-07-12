@@ -305,7 +305,7 @@ def cal_apis_for_user_reserve_data(all_user_reserve_data):
 
 def call_apis_for_useractivity_data(user_activities):
     for user_activity in user_activities:
-        call_api.dump_user_activity_data(user_activity['address'], user_activity['coinType'], user_activity['activityType'], user_activity['amount'], user_activity['amountOfDebtRepaid'], user_activity["healthFactor"], user_activity['Liquidation_price_same_currency'], user_activity['tx_hash'], user_activity['timestamp'], user_activity['block_number'])
+        call_api.dump_user_activity_data(user_activity['address'], user_activity['coinType'], user_activity['claimedCurrency'],  user_activity['activityType'], user_activity['amount'], user_activity['amountOfDebtRepaid'], user_activity["healthFactor"], user_activity['Liquidation_price_same_currency'], user_activity['tx_hash'], user_activity['timestamp'], user_activity['block_number'])
         #  call_api.dump_user_activity_data(user_activity['address'], user_activity['coinType'], user_activity['activityType'], user_activity['amount'], user_activity['amountOfDebtRepaid'], user_activity['Liquidation_price_same_currency'], user_activity['Liquidation_price_celo_in_cusd'], user_activity['Liquidation_price_celo_in_ceuro'], user_activity['Liquidation_price_cusd_in_celo'], user_activity['Liquidation_price_cusd_in_ceuro'], user_activity['Liquidation_price_ceuro_in_celo'], user_activity['Liquidation_price_ceuro_in_cusd'], user_activity['tx_hash'], user_activity['timestamp'], user_activity['block_number'])
 
 def call_apis_for_exchange_rate(block_number):
@@ -477,12 +477,15 @@ def get_user_activity(from_block, to_block):
                 amountOfDebtRepaid = 0
                 liquidation_price = 0
                 health_factor = 0.0
+                claimed_currency = 0
                 if event == 'LiquidationCall':
+                    claimed_currency = coins[e['args']['_collateral']]
                     amount = e['args']['_liquidatedCollateralAmount']
                     amountOfDebtRepaid = e['args']['_purchaseAmount']
                     Liquidation_price_same_currency = get_liquidation_price(e["blockNumber"], e['args']['_user'])
                     # print("liquidation_price: " + str(liquidation_price))
                     health_factor = get_health_factor(e['args']['_user'], e["blockNumber"]-1)
+                    
                 elif event == 'Repay':
                     amount = e['args']['_amountMinusFees'] + e['args']['_fees']
                     Liquidation_price_same_currency = get_liquidation_price(e["blockNumber"], e['args']['_user'])
@@ -497,11 +500,13 @@ def get_user_activity(from_block, to_block):
                     amount = e['args']['_amount']
                     # health_factor = get_health_factor(e['args']['_user'], e["blockNumber"])
                 print(e['blockNumber'])
+                
                 user_activities.append({
                     'activityType': events[event],
                     'address': e['args']['_user'], 
                     'timestamp': dt.fromtimestamp(e['args']['_timestamp']).strftime("%m-%d-%Y %H:%M:%S"),
                     'coinType': coins[e['args']['_reserve']],
+                    'claimedCurrency': claimed_currency,
                     'amount': amount/ether,
                     'healthFactor': health_factor,
                     'amountOfDebtRepaid': amountOfDebtRepaid/ether,
@@ -607,7 +612,7 @@ def main():
     # from_block, to_block = 7567667, celo_mainnet_latest_block
     # print(celo_mainnet_latest_block)
     # # from_block, to_block = celo_mainnet_latest_block-1000, celo_mainnet_latest_block
-    # user_activities = get_user_activity(from_block, to_block)  
+    # user_activities = get_user_activity(7104903-5, 7104903+5)  
     # call_apis_for_useractivity_data(user_activities)
     
     # print(celo_mainnet_latest_block)
@@ -615,6 +620,8 @@ def main():
     # bootstrap()
 
     # print(get_user_account_data(["0x5083043abfceadd736a97ce32a71ac7a1386e449"], 7104903))
+
+    #main
     current_block = get_latest_block_from_db()+1
     print("current block: " + str(current_block))
     # current_block = 7040956
