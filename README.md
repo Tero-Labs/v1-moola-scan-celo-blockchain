@@ -13,10 +13,29 @@ The following is the workflow to extract data from celo blockchain:
 * Get reserve specific user for each unique address using `getUserReserveData()` method for Celo and cUSD
 
 
+## Rquirement
+Python version 3.8 or higher
+
 ## Installation
 
 ```bash
 pip install -r requirements.txt
+```
+
+## Equations
+### **ltv** (Loan to value ratio)
+```math
+Current LTV = ( (TotalBorrow + TotalFees) / TotalCollateral ) * 100%
+Max LTV = ( SUM( Collateral(i) * LTV(i) ) / TotalCollateral ) * 100%
+```
+### **Health factor**
+```math
+healthFactor = (TotalCollateral * Liquidation Threshold) / (TotalBorrow + TotalFees)
+```
+### **Liquidation price**
+```math
+Liquidation Price = Collateral Market Price per Unit / healthFactor
+Liquidation Threshold = SUM( Collateral(i) * Liquidation Threshold(i) ) / TotalCollateral
 ```
 
 ## Methods
