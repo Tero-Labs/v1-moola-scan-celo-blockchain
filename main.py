@@ -494,7 +494,7 @@ def get_user_activity(from_block, to_block):
         start = from_block
         specific_event_data = []
         end = start+10000
-        fee_in_celo, fee_in_cusd, fee_in_ceur = 0,0,0
+        
         while end<to_block:
             event_filter = celo_mainnet_lendingPool.events[event].createFilter(fromBlock=celo_mainnet_web3.toHex(start), toBlock=celo_mainnet_web3.toHex(end))
             specific_event_data += event_filter.get_all_entries()    
@@ -502,6 +502,7 @@ def get_user_activity(from_block, to_block):
         event_filter = celo_mainnet_lendingPool.events[event].createFilter(fromBlock=celo_mainnet_web3.toHex(start), toBlock=celo_mainnet_web3.toHex(to_block))
         specific_event_data += event_filter.get_all_entries()
         Liquidation_price_same_currency = 0.0
+        
         number_of_event += len(specific_event_data)
         if len(specific_event_data) > 0:
             
@@ -512,6 +513,7 @@ def get_user_activity(from_block, to_block):
                 origination_fee = 0
                 health_factor = 0.0
                 claimed_currency = 0
+                fee_in_celo, fee_in_cusd, fee_in_ceur = 0,0,0
                 # print(e)
                 if event == 'LiquidationCall':
                     claimed_currency = coins[e['args']['_collateral']]
