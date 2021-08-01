@@ -494,6 +494,7 @@ def get_user_activity(from_block, to_block):
         start = from_block
         specific_event_data = []
         end = start+10000
+        fee_in_celo, fee_in_cusd, fee_in_ceur = 0,0,0
         while end<to_block:
             event_filter = celo_mainnet_lendingPool.events[event].createFilter(fromBlock=celo_mainnet_web3.toHex(start), toBlock=celo_mainnet_web3.toHex(end))
             specific_event_data += event_filter.get_all_entries()    
