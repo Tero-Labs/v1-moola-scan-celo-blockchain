@@ -204,8 +204,8 @@ def get_user_reserve_data(unique_addresses, block_number):
            
             parsed_data = {
                 "Deposited": getInEther(user_reserve_data[0]),
-                "Borrowed": getInEther(user_reserve_data[1]),
-                "Debt": getInEther(user_reserve_data[2]),
+                "Borrowed": getInEther(user_reserve_data[2]),
+                "Debt": getInEther(user_reserve_data[1]),
                 "RateMode": INTEREST_RATE[user_reserve_data[3]],
                 "BorrowRate": getInRayRate(user_reserve_data[4]),
                 "LiquidityRate": getInRayRate(user_reserve_data[5]),
