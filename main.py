@@ -432,7 +432,7 @@ events = {
  'Borrow': 'borrow', 'Deposit': 'deposit', 'LiquidationCall': 'liquidate', 'RedeemUnderlying': 'withdraw', 'Repay': 'repay'
 }
 # events = {
-#  'Borrow': 'borrow', 'Repay': 'repay'
+#  'LiquidationCall': 'liquidate'
 # }
 # events = { 
 #  'Borrow': 'borrow', 'Deposit': 'deposit', 'LiquidationCall': 'liquidate', 'RedeemUnderlying': 'withdraw', 'Repay': 'repay', 'Swap':'swap', 'FlashLoan':'flashLoan', 'OriginationFeeLiquidated':'OriginationFeeLiquidated', 'RebalanceStableBorrowRate': 'RebalanceStableBorrowRate', 'ReserveUsedAsCollateralDisabled': 'ReserveUsedAsCollateralDisabled' , 'ReserveUsedAsCollateralEnabled': 'ReserveUsedAsCollateralEnabled'
@@ -489,6 +489,23 @@ def get_user_activity(from_block, to_block):
     number_of_event = 0
     cusd_price_in_celo = get_price_in_celo("cusd")
     ceuro_price_in_celo = get_price_in_celo("ceuro")
+    currency_prices = {
+            'celo': {
+                "celo": 1,
+                "cusd": 1/cusd_price_in_celo,
+                "ceuro": 1/ceuro_price_in_celo
+            },
+            'cusd': {
+                "celo": cusd_price_in_celo,
+                "cusd": 1,
+                "ceuro": cusd_price_in_celo/ceuro_price_in_celo
+            },
+            'ceuro': {
+                "cusd": ceuro_price_in_celo/cusd_price_in_celo,
+                "celo": ceuro_price_in_celo,
+                "ceuro": 1
+            },
+        } 
     for event in events.keys():
         # start = 3410001
         start = from_block
@@ -520,7 +537,7 @@ def get_user_activity(from_block, to_block):
                     amount = e['args']['_liquidatedCollateralAmount']
                     amountOfDebtRepaid = e['args']['_purchaseAmount']
                     
-                    Liquidation_price_same_currency = get_liquidation_price(e["blockNumber"], e['args']['_user'])
+                    Liquidation_price_same_currency = get_liquidation_price(e["blockNumber"], e['args']['_user'])*currency_prices[claimed_currency][coins[e['args']['_reserve']]]
                     # print("liquidation_price: " + str(liquidation_price))
                     health_factor = get_health_factor(e['args']['_user'], e["blockNumber"]-1)
                     
@@ -659,7 +676,8 @@ def main():
     # print(celo_mainnet_latest_block)
     # # from_block, to_block = celo_mainnet_latest_block-1000, celo_mainnet_latest_block
     # user_activities = get_user_activity(7104903-100, 7104903+5)  
-    # user_activities = get_user_activity(celo_mainnet_latest_block-1000, celo_mainnet_latest_block)  
+    # user_activities = get_user_activity(8051894, 8051899)  
+    # print(user_activities)
     # call_apis_for_useractivity_data(user_activities)
     
     # print(celo_mainnet_latest_block)
