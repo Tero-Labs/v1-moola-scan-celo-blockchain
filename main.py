@@ -381,18 +381,15 @@ def update(latest_block):
         # print("Ahead of the celo blockchain")
         # print(latest_block, current_latest_block)
         current_latest_block = get_latest_block(helper_w3)
-    # unique_addresses = get_addresses(from_block, to_block)
+    unique_addresses = get_addresses(from_block, to_block)
     print("Number of unique addresses " + str(len(unique_addresses)))
-    user_activities = get_user_activity(from_block, to_block)  
-    call_apis_for_useractivity_data(user_activities)
-    call_api.dump_latest_scanned_block_number(to_block)
-    # if len(unique_addresses) > 0:
-    #     # call_all_apis_for_reserve_and_user_data(from_block, to_block, unique_addresses)
-    #     user_activities = get_user_activity(from_block, to_block)  
-    #     call_apis_for_useractivity_data(user_activities)
-    #     call_api.dump_latest_scanned_block_number(to_block)
-    # else:
-    #     call_api.dump_latest_scanned_block_number(to_block)
+    if len(unique_addresses) > 0:
+        call_all_apis_for_reserve_and_user_data(from_block, to_block, unique_addresses)
+        user_activities = get_user_activity(from_block, to_block)  
+        call_apis_for_useractivity_data(user_activities)
+        call_api.dump_latest_scanned_block_number(to_block)
+    else:
+        call_api.dump_latest_scanned_block_number(to_block)
 
 celo_to_usd = cg.get_price(ids='celo', vs_currencies='usd')['celo']['usd']
 
