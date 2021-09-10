@@ -348,6 +348,7 @@ def bootstrap():
     # call_apis_for_useractivity_data(user_activities)
     # print("Number of user activities:" + str(len(user_activities)))
     call_api.dump_latest_scanned_block_number(to_block)
+    # something
     # print("Number of calls: " + str(number_of_calls))
 
 def call_all_apis_for_reserve_and_user_data(from_block, to_block, unique_addresses):
