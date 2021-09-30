@@ -7,6 +7,7 @@ from datetime import datetime as dt
 from pycoingecko import CoinGeckoAPI
 from web3 import Web3
 import requests
+import time
 
 
 cg = CoinGeckoAPI()
@@ -533,6 +534,8 @@ def get_user_activity(from_block, to_block):
                     try:
                         specific_event_data += event_filter.get_all_entries()   
                     except:
+                        print("Last attempts")
+                        time.sleep(1)
                         specific_event_data += event_filter.get_all_entries()   
 
             start, end = end+1, end+10000 
@@ -546,6 +549,8 @@ def get_user_activity(from_block, to_block):
                 try:
                     specific_event_data += event_filter.get_all_entries()   
                 except:
+                    print("Last attempts")
+                    time.sleep(1)
                     specific_event_data += event_filter.get_all_entries()   
         Liquidation_price_same_currency = 0.0
         
