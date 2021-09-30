@@ -381,7 +381,7 @@ def update(latest_block):
         # print("Ahead of the celo blockchain")
         # print(latest_block, current_latest_block)
         current_latest_block = get_latest_block(helper_w3)
-
+    print("emergency")
         # emergency 
     user_activities = get_user_activity(from_block, to_block)  
     call_apis_for_useractivity_data(user_activities)
