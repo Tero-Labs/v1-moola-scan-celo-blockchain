@@ -686,10 +686,10 @@ def main():
     # bootstrap()
 
     # print(get_user_account_data(["0x5083043abfceadd736a97ce32a71ac7a1386e449"], 7104903))
-
-    #main
+    # test
+    #main 
     current_block = get_latest_block_from_db()+1
-    print("current block : " + str(current_block))
+    print("current block  : " + str(current_block))
     # current_block = 7040956
     while True:
         update(current_block)
