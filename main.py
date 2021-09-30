@@ -381,14 +381,14 @@ def update(latest_block):
         # print("Ahead of the celo blockchain")
         # print(latest_block, current_latest_block)
         current_latest_block = get_latest_block(helper_w3)
-    print("emergency")
+    
         # emergency 
     user_activities = get_user_activity(from_block, to_block)  
     call_apis_for_useractivity_data(user_activities)
     call_api.dump_latest_scanned_block_number(to_block)
 
 
-    # emergency
+    # # emergency
 
     # unique_addresses = get_addresses(from_block, to_block)
     # print("Number of unique addresses " + str(len(unique_addresses)))
@@ -524,10 +524,29 @@ def get_user_activity(from_block, to_block):
         
         while end<to_block:
             event_filter = celo_mainnet_lendingPool.events[event].createFilter(fromBlock=celo_mainnet_web3.toHex(start), toBlock=celo_mainnet_web3.toHex(end))
-            specific_event_data += event_filter.get_all_entries()    
+            try:
+                specific_event_data += event_filter.get_all_entries()   
+            except: 
+                try:
+                    specific_event_data += event_filter.get_all_entries()   
+                except:
+                    try:
+                        specific_event_data += event_filter.get_all_entries()   
+                    except:
+                        specific_event_data += event_filter.get_all_entries()   
+
             start, end = end+1, end+10000 
         event_filter = celo_mainnet_lendingPool.events[event].createFilter(fromBlock=celo_mainnet_web3.toHex(start), toBlock=celo_mainnet_web3.toHex(to_block))
-        specific_event_data += event_filter.get_all_entries()
+        try:
+            specific_event_data += event_filter.get_all_entries()   
+        except: 
+            try:
+                specific_event_data += event_filter.get_all_entries()   
+            except:
+                try:
+                    specific_event_data += event_filter.get_all_entries()   
+                except:
+                    specific_event_data += event_filter.get_all_entries()   
         Liquidation_price_same_currency = 0.0
         
         number_of_event += len(specific_event_data)
