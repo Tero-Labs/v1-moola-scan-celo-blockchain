@@ -260,7 +260,7 @@ def store_addresses(log_unique_addresses, fromto_unique_addresses, unique_addres
         file.write(address+"\n")
     file.close()
     # addresses = [log['address'] for log in logs] 
-    # print(addresses)
+   
     # unique_addresses = list(set(addresses)) 
     # print("Number of unique addresses: " + str(len(unique_addresses)))
 
