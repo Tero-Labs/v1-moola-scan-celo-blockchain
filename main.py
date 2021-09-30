@@ -401,7 +401,7 @@ def update(latest_block):
     else:
         call_api.dump_latest_scanned_block_number(to_block)
 
-celo_to_usd = cg.get_price(ids='celo', vs_currencies='usd')['celo']['usd']
+# celo_to_usd = cg.get_price(ids='celo', vs_currencies='usd')['celo']['usd']
 
 
 
