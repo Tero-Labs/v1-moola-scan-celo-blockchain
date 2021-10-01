@@ -524,34 +524,11 @@ def get_user_activity(from_block, to_block):
         end = start+10000
         
         while end<to_block:
-            event_filter = celo_mainnet_lendingPool.events[event].createFilter(fromBlock=celo_mainnet_web3.toHex(start), toBlock=celo_mainnet_web3.toHex(end))
-            try:
-                specific_event_data += event_filter.get_all_entries()   
-            except: 
-                try:
-                    specific_event_data += event_filter.get_all_entries()   
-                except:
-                    try:
-                        specific_event_data += event_filter.get_all_entries()   
-                    except:
-                        print("Last attempts")
-                        time.sleep(1)
-                        specific_event_data += event_filter.get_all_entries()   
-
+            event_data = celo_mainnet_lendingPool.events[event].getLogs(fromBlock=celo_mainnet_web3.toHex(start), toBlock=celo_mainnet_web3.toHex(end))
+            specific_event_data += event_data   
             start, end = end+1, end+10000 
-        event_filter = celo_mainnet_lendingPool.events[event].createFilter(fromBlock=celo_mainnet_web3.toHex(start), toBlock=celo_mainnet_web3.toHex(to_block))
-        try:
-            specific_event_data += event_filter.get_all_entries()   
-        except: 
-            try:
-                specific_event_data += event_filter.get_all_entries()   
-            except:
-                try:
-                    specific_event_data += event_filter.get_all_entries()   
-                except:
-                    print("Last attempts")
-                    time.sleep(1)
-                    specific_event_data += event_filter.get_all_entries()   
+        event_data = celo_mainnet_lendingPool.events[event].getLogs(fromBlock=celo_mainnet_web3.toHex(start), toBlock=celo_mainnet_web3.toHex(end))
+        specific_event_data += event_data   
         Liquidation_price_same_currency = 0.0
         
         number_of_event += len(specific_event_data)
@@ -710,16 +687,16 @@ def main():
     # print(celo_mainnet_latest_block)
     # # from_block, to_block = celo_mainnet_latest_block-1000, celo_mainnet_latest_block
     # user_activities = get_user_activity(7104903-100, 7104903+5)  
-    # user_activities = get_user_activity(8051894, 8051899)  
-    # print(user_activities)
-    # call_apis_for_useractivity_data(user_activities)
+ 
     
     # print(celo_mainnet_latest_block)
     # print("Finished...")
     # bootstrap()
 
     # print(get_user_account_data(["0x5083043abfceadd736a97ce32a71ac7a1386e449"], 7104903))
-    # test
+  
+
+    
     #main 
     current_block = get_latest_block_from_db()+1
     print("current block  : " + str(current_block))
