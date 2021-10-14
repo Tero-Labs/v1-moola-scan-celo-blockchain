@@ -698,9 +698,9 @@ def main():
 
     
     #main 
-    current_block = get_latest_block_from_db()+1
+    # current_block = get_latest_block_from_db()+1
     # print("current block  : " + str(current_block))
-    # current_block = 9323077
+    current_block = 9324764
     while True:
         update(current_block)
         current_block+=1
