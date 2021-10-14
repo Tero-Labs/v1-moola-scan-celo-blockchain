@@ -62,7 +62,7 @@ price_oracle = celo_mainnet_eth.contract(address=price_oracle_address, abi= IPri
 helper_w3 = Kit('https://forno.celo.org').w3
 celo_mainnet_latest_block = get_latest_block(helper_w3)
 
-w3 = Web3(Web3.HTTPProvider('https://celo-mainnet--rpc.datahub.figment.io/apikey/f75e7810e4dd99627b3defedada074a4/'))
+w3 = Web3(Web3.HTTPProvider('https://celo-mainnet--rpc.datahub.figment.io/apikey/e05da80c6de7b2f8af3bae0015639f08/'))
 lendingPool_contract = w3.eth.contract(address=celo_mainnet_address, abi= Lending_Pool)
 print(celo_mainnet_address)
 print("Latest scanned block number " + str(celo_mainnet_latest_block))
