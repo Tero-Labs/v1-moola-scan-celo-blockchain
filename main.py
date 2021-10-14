@@ -700,10 +700,11 @@ def main():
     #main 
     current_block = get_latest_block_from_db()+1
     print("current block  : " + str(current_block))
-    # current_block = 9324764
+    current_block = 9329431
     while True:
         update(current_block)
         current_block+=1
+    print(get_latest_block_from_db())
     # call_api.dump_latest_scanned_block_number(9329431)
    
 
