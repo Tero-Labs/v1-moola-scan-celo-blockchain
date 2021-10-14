@@ -704,8 +704,8 @@ def main():
     while True:
         update(current_block)
         current_block+=1
-    call_api.dump_latest_scanned_block_number(9329431)
-
+    # call_api.dump_latest_scanned_block_number(9329431)
+   
 
     # user_reserve_data_c = celo_mainnet_lendingPool.functions.getUserReserveData('0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', celo_mainnet_web3.toChecksumAddress('0xFf447b6b29Cc2000afB7125c560E18F4DC109993')).call(block_identifier=6936112)
     # print(user_reserve_data_c[0])
